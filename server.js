@@ -50,18 +50,22 @@ app.post("/add-product", async (req, res) => {
                 imageUrl, qrCode
             } = product;
 
-            if (!id || !title || !price || !description || !category || !color || !imageUrl || !qrCode) {
+            // ✅ Validación estricta de parámetros faltantes
+            if (![id, title, price, description, category, color, imageUrl, qrCode].every(Boolean)) {
+                console.error("Producto con información incompleta:", product);
                 return res.status(400).send(`Producto inválido: ${JSON.stringify(product)}`);
             }
 
-            if (rows.find(row => row[0] === id)) {
+            // ✅ Evitar duplicados
+            if (rows.some(row => row[0] === id)) {
                 console.log(`Producto con ID ${id} ya existe. Omitiendo registro.`);
                 continue;
             }
 
+            // Guardar QR code como archivo
             const qrBuffer = Buffer.from(qrCode, "base64");
             const qrFileName = `${id}_qr.png`;
-            const qrFilePath = `./qrcodes/${qrFileName}`;
+            const qrFilePath = path.join(__dirname, "qrcodes", qrFileName);
             fs.writeFileSync(qrFilePath, qrBuffer);
 
             const qrUrl = `https://nantli-backend.onrender.com/qrcodes/${qrFileName}`;
@@ -95,9 +99,14 @@ app.post("/add-product", async (req, res) => {
     }
 });
 
-// ✅ Servir index.html en cualquier ruta que no sea API
+// ✅ Mejor manejo de archivos estáticos e index.html
 app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
+    const filePath = path.join(__dirname, "public", "index.html");
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send("index.html no encontrado en la carpeta pública.");
+    }
 });
 
 // ===================== INICIAR SERVIDOR =====================
