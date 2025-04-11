@@ -3,14 +3,20 @@ const bodyParser = require("body-parser");
 const { google } = require("googleapis");
 const cors = require("cors");
 const fs = require("fs");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Middlewares
 app.use(bodyParser.json());
 app.use(cors());
 app.use("/qrcodes", express.static("qrcodes"));
 
+// ✅ Servir archivos estáticos (como index.html)
+app.use(express.static(path.join(__dirname, "public")));
+
+// Google Auth
 const auth = new google.auth.GoogleAuth({
     keyFile: "nantli-456106-91324fb63687.json",
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
@@ -89,11 +95,9 @@ app.post("/add-product", async (req, res) => {
     }
 });
 
-// Aquí puedes seguir con el resto de tus endpoints como update-inventory, get-product-by-id, etc.
-
-// ===================== RUTA DE PRUEBA =====================
-app.get("/", (req, res) => {
-    res.send("Servidor funcionando. Usa /add-product para agregar productos.");
+// ✅ Servir index.html en cualquier ruta que no sea API
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // ===================== INICIAR SERVIDOR =====================

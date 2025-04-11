@@ -195,10 +195,10 @@
 // Cargar los productos al iniciar la página
 async function loadProducts() {
     try {
-        const response = await fetch("https://localhost:3001/fetch-sheet");
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-        }
+        const response = await fetch("https://nantli-backend.onrender.com/fetch-sheet");
+if (!response.ok) {
+    throw new Error(`Error: ${response.statusText}`);
+}
 
         const products = await response.json();
         allProducts = products; // Guardar productos para usar en los filtros
@@ -363,11 +363,10 @@ document.addEventListener("DOMContentLoaded", loadProducts);
 
         async function loadCategoriesAndSubcategories() {
             try {
-                const response = await fetch("https://localhost:3001/fetch-sheet");
-                if (!response.ok) {
-                    throw new Error(`Error al obtener datos: ${response.statusText}`);
-                }
-        
+                const response = await fetch("https://nantli-backend.onrender.com/fetch-sheet");
+if (!response.ok) {
+    throw new Error(`Error al obtener datos: ${response.statusText}`);
+}
                 const products = await response.json();
         
                 // Extraer categorías únicas
@@ -451,7 +450,7 @@ document.addEventListener("DOMContentLoaded", loadProducts);
                 : [{ title, price, description, category, subcategory, color, size: "", quantity: "", imageUrl }];
             
             try {
-                const response = await fetch("https://localhost:3001/add-product", {
+                const response = await fetch("https://nantli-backend.onrender.com/add-product", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(data),
@@ -543,7 +542,7 @@ document.addEventListener("DOMContentLoaded", loadProducts);
                 }];
         
             try {
-                const response = await fetch("https://localhost:3001/add-product", {
+                const response = await fetch("https://nantli-backend.onrender.com/add-product", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(data), // Enviar datos como JSON
