@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Google Auth
 const auth = new google.auth.GoogleAuth({
-    keyFile: path.join(__dirname, "config", "nantli-456106-91324fb63687.json"), // Cambia la ruta según la ubicación real del archivo
+    keyFile: path.join(__dirname, "config", "nantli-456106-6f611c3d6987.json"), // Cambia la ruta según la ubicación real del archivo
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
