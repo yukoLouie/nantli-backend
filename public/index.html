@@ -200,33 +200,41 @@
         
                 const products = await response.json();
                 displayProducts(products);
-                generateOtherFilters(products); // si también quieres regenerar filtros
+                generateOtherFilters(products); // Si necesitas regenerar filtros
             } catch (error) {
                 console.error("Error al cargar productos:", error);
                 alert("No se pudieron cargar los productos.");
             }
         }
+        
         function displayProducts(products) {
-            const container = document.getElementById("productsContainer");
+            const container = document.getElementById("cardContainer");
             container.innerHTML = ""; // Limpiar productos anteriores
         
             products.forEach(product => {
-                const productDiv = document.createElement("div");
-                productDiv.classList.add("product-card");
-                productDiv.innerHTML = `
-                    <img src="${product.imageUrl}" alt="${product.title}" />
-                    <h3>${product.title}</h3>
-                    <p>${product.description}</p>
-                    <p>Precio: $${product.price}</p>
-                    <p>Categoría: ${product.category}</p>
-                    <p>Subcategoría: ${product.subcategory || "—"}</p>
-                    <p>Color: ${product.color}</p>
-                    <p>Talla: ${product.size || "—"}</p>
-                    <p>Cantidad: ${product.quantity || "—"}</p>
+                const productCard = document.createElement("div");
+                productCard.classList.add("formProducto");  // Usamos la clase 'formProducto'
+        
+                // Agregar contenido de la tarjeta usando la estructura de 'formProducto.html'
+                productCard.innerHTML = `
+                    <div class="card-body">
+                        <img src="${product.imageUrl}" alt="${product.title}" class="card-img-top" style="width: 100%; height: auto; border-radius: 8px;">
+                        <h5 class="card-title">${product.title}</h5>
+                        <p class="card-text"><strong>Precio:</strong> $${product.price}</p>
+                        <p class="card-text"><strong>Descripción:</strong> ${product.description}</p>
+                        <p class="card-text"><strong>Categoría:</strong> ${product.category}</p>
+                        <p class="card-text"><strong>Subcategoría:</strong> ${product.subcategory || "—"}</p>
+                        <p class="card-text"><strong>Color:</strong> ${product.color}</p>
+                        <p class="card-text"><strong>Talla:</strong> ${product.size || "—"}</p>
+                        <p class="card-text"><strong>Cantidad:</strong> ${product.quantity || "—"}</p>
+                    </div>
                 `;
-                container.appendChild(productDiv);
+        
+                // Agregar la tarjeta al contenedor
+                container.appendChild(productCard);
             });
         }
+        
         
         document.addEventListener("DOMContentLoaded", () => {
             loadCategoriesAndSubcategories();
