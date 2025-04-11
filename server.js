@@ -6,7 +6,7 @@ const fs = require("fs");
 const https = require("https");
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001; // Usa el puerto proporcionado por Render si está disponible
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -60,7 +60,7 @@ app.post("/add-product", async (req, res) => {
             const qrFilePath = `./qrcodes/${qrFileName}`;
             fs.writeFileSync(qrFilePath, qrBuffer);
 
-            const qrUrl = `https://localhost:3001/qrcodes/${qrFileName}`;
+            const qrUrl = `https://nantli-backend.onrender.com/qrcodes/${qrFileName}`;
 
             const values = [
                 id,
@@ -92,6 +92,7 @@ app.post("/add-product", async (req, res) => {
 });
 
 
+// ===================== ACTUALIZAR INVENTARIO =====================
 // ===================== ACTUALIZAR INVENTARIO =====================
 app.post("/update-inventory", async (req, res) => {
     try {
@@ -143,6 +144,7 @@ app.post("/update-inventory", async (req, res) => {
 });
 
 // ===================== BUSCAR POR QR =====================
+// ===================== BUSCAR POR QR =====================
 app.get("/get-product-by-qr/:qrCode", async (req, res) => {
     const qrCode = decodeURIComponent(req.params.qrCode);
 
@@ -176,7 +178,6 @@ app.get("/get-product-by-qr/:qrCode", async (req, res) => {
 // ===================== BUSCAR POR ID =====================
 app.get("/get-product-by-id/:id", async (req, res) => {
     const productId = req.params.id;
-    console.log("ID recibido:", productId);  // Log para verificar el ID recibido
 
     try {
         const client = await auth.getClient();
@@ -188,25 +189,15 @@ app.get("/get-product-by-id/:id", async (req, res) => {
         });
 
         const rows = response.data.values;
-        console.log("Filas recibidas:", rows);  // Log para verificar los datos recibidos
+        const headers = rows[0]; // Obtener los encabezados
+        const data = rows.slice(1); // Excluir encabezados
 
-        const headers = rows[0];  // Obtener los encabezados
-        const data = rows.slice(1);  // Excluir encabezados
-
-        // Log para verificar las filas sin encabezado
-        console.log("Datos sin encabezados:", data);
-
-        // Buscar el producto con el UUID (ID) en la primera columna de las filas de datos
         const productRow = data.find(row => row[0] === productId);  // Buscar en la columna 0 (ID)
-        
-        // Log para verificar si se encontró el producto
-        console.log("Producto encontrado:", productRow);
 
         if (!productRow) {
             return res.status(404).send("Producto no encontrado.");
         }
 
-        // Crear un objeto con los valores del producto usando los encabezados
         const product = Object.fromEntries(headers.map((key, i) => [key, productRow[i] || ""]));
         res.json(product);
     } catch (error) {
@@ -215,11 +206,7 @@ app.get("/get-product-by-id/:id", async (req, res) => {
     }
 });
 
-
-
-
-
-
+// ===================== OBTENER TODOS =====================
 // ===================== OBTENER TODOS =====================
 app.get("/fetch-sheet", async (req, res) => {
     try {
@@ -262,11 +249,7 @@ app.get("/", (req, res) => {
     res.send("Servidor funcionando. Usa /add-product para agregar productos.");
 });
 
-const httpsOptions = {
-    key: fs.readFileSync("certificates/localhost.key"),
-    cert: fs.readFileSync("certificates/localhost.crt"),
-};
-
-https.createServer(httpsOptions, app).listen(PORT, () => {
+// Asegúrate de que el servidor escuche en '0.0.0.0'
+https.createServer(app).listen(PORT, "0.0.0.0", () => {
     console.log(`Servidor HTTPS corriendo en https://localhost:${PORT}`);
 });
