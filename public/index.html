@@ -156,6 +156,7 @@
                     <label for="color">Color</label>
                     <input type="text" id="color" placeholder="Ejemplo: Rojo, Azul">
                 </div>
+                <div id="productsContainer"></div>
 
                 <!-- Tallas -->
                 <div class="form-group">
@@ -192,6 +193,41 @@
     </div>
 
     <script>
+        async function loadProducts() {
+            try {
+                const response = await fetch("https://nantli-backend.onrender.com/fetch-sheet");
+                if (!response.ok) throw new Error("Error al cargar productos");
+        
+                const products = await response.json();
+                displayProducts(products);
+                generateOtherFilters(products); // si también quieres regenerar filtros
+            } catch (error) {
+                console.error("Error al cargar productos:", error);
+                alert("No se pudieron cargar los productos.");
+            }
+        }
+        function displayProducts(products) {
+            const container = document.getElementById("productsContainer");
+            container.innerHTML = ""; // Limpiar productos anteriores
+        
+            products.forEach(product => {
+                const productDiv = document.createElement("div");
+                productDiv.classList.add("product-card");
+                productDiv.innerHTML = `
+                    <img src="${product.imageUrl}" alt="${product.title}" />
+                    <h3>${product.title}</h3>
+                    <p>${product.description}</p>
+                    <p>Precio: $${product.price}</p>
+                    <p>Categoría: ${product.category}</p>
+                    <p>Subcategoría: ${product.subcategory || "—"}</p>
+                    <p>Color: ${product.color}</p>
+                    <p>Talla: ${product.size || "—"}</p>
+                    <p>Cantidad: ${product.quantity || "—"}</p>
+                `;
+                container.appendChild(productDiv);
+            });
+        }
+        
         document.addEventListener("DOMContentLoaded", () => {
             loadCategoriesAndSubcategories();
             loadProducts();
