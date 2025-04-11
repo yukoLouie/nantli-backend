@@ -13,12 +13,12 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use("/qrcodes", express.static("qrcodes"));
 
-// ✅ Servir archivos estáticos (como index.html)
+// ✅ Servir archivos estáticos (como index.html y otros recursos)
 app.use(express.static(path.join(__dirname, "public")));
 
 // Google Auth
 const auth = new google.auth.GoogleAuth({
-    keyFile: "nantli-456106-91324fb63687.json",
+    keyFile: path.join(__dirname, "nantli-456106-91324fb63687.json"), // Asegúrate de que el archivo JSON esté en la raíz
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
@@ -50,15 +50,18 @@ app.post("/add-product", async (req, res) => {
                 imageUrl, qrCode
             } = product;
 
+            // Validar que el producto tenga todos los campos necesarios
             if (!id || !title || !price || !description || !category || !color || !imageUrl || !qrCode) {
                 return res.status(400).send(`Producto inválido: ${JSON.stringify(product)}`);
             }
 
+            // Verificar si el producto ya existe en la hoja de cálculo
             if (rows.find(row => row[0] === id)) {
                 console.log(`Producto con ID ${id} ya existe. Omitiendo registro.`);
                 continue;
             }
 
+            // Generar y guardar el código QR
             const qrBuffer = Buffer.from(qrCode, "base64");
             const qrFileName = `${id}_qr.png`;
             const qrFilePath = `./qrcodes/${qrFileName}`;
