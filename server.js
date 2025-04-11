@@ -98,6 +98,32 @@ app.post("/add-product", async (req, res) => {
         res.status(500).send("Ocurrió un error al registrar el producto.");
     }
 });
+app.get("/fetch-sheet", async (req, res) => {
+    try {
+        const client = await auth.getClient();
+        const sheets = google.sheets({ version: "v4", auth: client });
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: "Hoja 1",
+        });
+
+        const rows = response.data.values || [];
+        const headers = rows[0];
+const products = rows.slice(1).map(row => {
+    const product = {};
+    headers.forEach((header, index) => {
+        product[header] = row[index] || "";
+    });
+    return product;
+});
+        res.json(products);
+
+    } catch (error) {
+        console.error("Error al obtener datos de la hoja:", error.message);
+        res.status(500).send("Error al obtener datos de la hoja");
+    }
+});
 
 // ✅ Mejor manejo de archivos estáticos e index.html
 app.get("*", (req, res) => {

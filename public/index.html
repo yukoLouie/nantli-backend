@@ -193,19 +193,24 @@
         let allProducts = []; // Variable global para almacenar todos los productos
 
 // Cargar los productos al iniciar la página
+document.addEventListener("DOMContentLoaded", function() {
+    loadProducts(); // Llamar a la función que carga los productos
+});
+
+// Cargar los productos desde el backend
 async function loadProducts() {
     try {
         const response = await fetch("https://nantli-backend.onrender.com/fetch-sheet");
-if (!response.ok) {
-    throw new Error(`Error: ${response.statusText}`);
-}
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
 
         const products = await response.json();
         allProducts = products; // Guardar productos para usar en los filtros
 
         displayProducts(products); // Mostrar productos iniciales
-        generateOtherFilters(products);
-        generateCategoryFilters(products); // Generar filtros dinámicos
+        generateCategoryFilters(products); // Generar filtros de categoría
+        generateSubcategoryFilters(products); // Generar filtros de subcategoría
         
     } catch (error) {
         console.error("Error al cargar los productos:", error);
@@ -234,16 +239,16 @@ function displayProducts(products) {
         category.textContent = `Categoría: ${product.category}`;
 
         const subcategory = document.createElement("p");
-        subcategory.textContent = `Subcategoría: ${product.subcategory}`;
+        subcategory.textContent = `Subcategoría: ${product.subcategory || 'N/A'}`;
 
         const color = document.createElement("p");
-        color.textContent = `Color: ${product.color}`;
+        color.textContent = `Color: ${product.color || 'N/A'}`;
 
         const size = document.createElement("p");
-        size.textContent = `Talla: ${product.size}`;
+        size.textContent = `Talla: ${product.size || 'N/A'}`;
 
         const image = document.createElement("img");
-        image.src = product.imageUrl;
+        image.src = product.imageUrl || 'ruta-a-imagen-por-defecto.jpg';  // Ruta por defecto si no hay imagen
         image.alt = product.title;
 
         card.appendChild(image);
@@ -277,7 +282,7 @@ function generateCategoryFilters(products) {
 function filterByCategory(category, products) {
     const filteredProducts = products.filter(product => product.category === category);
     displayProducts(filteredProducts);
-    generateSubcategoryFilters(filteredProducts);
+    generateSubcategoryFilters(filteredProducts);  // Actualizar filtros de subcategoría
 }
 
 // Generar botones de subcategorías dinámicas
@@ -288,7 +293,7 @@ function generateSubcategoryFilters(products) {
     const subcategories = [...new Set(products.map(product => product.subcategory))];
     subcategories.forEach(subcategory => {
         const button = document.createElement("button");
-        button.textContent = subcategory;
+        button.textContent = subcategory || 'N/A';  // Mostrar 'N/A' si no hay subcategoría
         button.onclick = () => filterBySubcategory(subcategory, products);
         subcategoryFilters.appendChild(button);
     });
@@ -296,7 +301,7 @@ function generateSubcategoryFilters(products) {
 
 // Filtrar por subcategoría
 function filterBySubcategory(subcategory, products) {
-    const filteredProducts = products.filter(product => product.subcategory === subcategory);
+    const filteredProducts = products.filter(product => product.subcategory === subcategory || subcategory === 'N/A');
     displayProducts(filteredProducts);
 }
 
