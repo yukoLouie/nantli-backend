@@ -95,7 +95,7 @@
     <div class="card-container" id="cardContainer"></div>
     
     <!-- Botón flotante -->
-    <button class="floating-btn" onclick="showForm()">
+    <button class="floating-btn" onclick="showForm()" title="Agregar nuevo producto">
         <i class="bi bi-plus"></i> <!-- Ícono de Bootstrap -->
     </button>
     
@@ -137,12 +137,12 @@
         function showForm() {
             document.getElementById("formContainer").style.display = "flex";
         }
-
+    
         function hideForm() {
             document.getElementById("formContainer").style.display = "none";
         }
-
-        function addProduct() {
+    
+        async function addProduct() {
             const title = document.getElementById("title").value;
             const price = document.getElementById("price").value;
             const description = document.getElementById("description").value;
@@ -151,15 +151,31 @@
             const size = document.getElementById("size").value || "N/A";
             const quantity = document.getElementById("quantity").value;
             const imageUrl = document.getElementById("imageUrl").value;
-
+    
             const productData = { title, price, description, category, color, size, quantity, imageUrl };
-
-            console.log("Datos del producto:", productData); // Para depuración
-
-            // Aquí agregarías una lógica para enviar 'productData' a tu servidor/hoja de cálculo.
-            alert("Producto registrado con éxito (simulado)!");
-            hideForm(); // Cerrar formulario
+    
+            try {
+                const response = await fetch("https://nantli-backend.onrender.com/register-product", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(productData)
+                });
+    
+                if (response.ok) {
+                    alert("Producto registrado correctamente!");
+                    hideForm();
+                } else {
+                    const errorText = await response.text();
+                    alert("Error al registrar producto: " + errorText);
+                }
+            } catch (error) {
+                console.error("Error de red:", error);
+                alert("Error de red al registrar producto.");
+            }
         }
     </script>
+    
 </body>
 </html>

@@ -105,7 +105,7 @@
         <div class="card-container" id="cardContainer"></div>
         
         <!-- Botón flotante -->
-        <button class="floating-btn" onclick="showForm()">
+        <button class="floating-btn" onclick="showForm()" title="Agregar nuevo producto">
             <i class="bi bi-plus"></i>
         </button>
        
@@ -185,311 +185,128 @@
                 <!-- Botones de acción -->
                 <button type="button" class="btn" onclick="addProduct()">Registrar Producto</button>
                 <button type="button" class="btn-close" onclick="hideForm()">Cerrar</button>
+                <button id="submitButton" onclick="addProduct()">Registrar producto</button>
+
             </form>
         </div>
     </div>
 
     <script>
-        let allProducts = []; // Variable global para almacenar todos los productos
-
-// Cargar los productos al iniciar la página
-document.addEventListener("DOMContentLoaded", function() {
-    loadProducts(); // Llamar a la función que carga los productos
-});
-
-// Cargar los productos desde el backend
-async function loadProducts() {
-    try {
-        const response = await fetch("https://nantli-backend.onrender.com/fetch-sheet");
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
+        document.addEventListener("DOMContentLoaded", () => {
+            loadCategoriesAndSubcategories();
+            loadProducts();
+        });
+    
+        // Mostrar y ocultar campos según selecciones
+        document.getElementById("category").addEventListener("change", function () {
+            document.getElementById("newCategory").style.display = this.value === "otro" ? "block" : "none";
+        });
+    
+        document.getElementById("hasSubcategory").addEventListener("change", function () {
+            document.querySelector(".subcategory-container").style.display = this.checked ? "block" : "none";
+        });
+    
+        document.getElementById("subcategory").addEventListener("change", function () {
+            document.getElementById("newSubcategory").style.display = this.value === "otra" ? "block" : "none";
+        });
+    
+        document.getElementById("hasSize").addEventListener("change", function () {
+            document.getElementById("sizeContainer").style.display = this.checked ? "block" : "none";
+        });
+    
+        // Generar filtros por talla y color
+        function generateOtherFilters(products) {
+            const sizeFilters = document.getElementById("sizeFilters");
+            const colorFilters = document.getElementById("colorFilters");
+    
+            sizeFilters.innerHTML = "";
+            colorFilters.innerHTML = "";
+    
+            const sizes = [...new Set(products.map(p => p.size))].filter(size => size && size !== "N/A");
+            const colors = [...new Set(products.map(p => p.color))].filter(color => color && color !== "Sin color");
+    
+            sizes.forEach(size => {
+                const button = document.createElement("button");
+                button.textContent = size;
+                button.onclick = () => filterBySize(size, products);
+                sizeFilters.appendChild(button);
+            });
+    
+            colors.forEach(color => {
+                const button = document.createElement("button");
+                button.textContent = color;
+                button.style.backgroundColor = color;
+                button.style.color = ["black", "blue", "navy"].includes(color.toLowerCase()) ? "white" : "black";
+                button.onclick = () => filterByColor(color, products);
+                colorFilters.appendChild(button);
+            });
         }
-
-        const products = await response.json();
-        allProducts = products; // Guardar productos para usar en los filtros
-
-        displayProducts(products); // Mostrar productos iniciales
-        generateCategoryFilters(products); // Generar filtros de categoría
-        generateSubcategoryFilters(products); // Generar filtros de subcategoría
-        
-    } catch (error) {
-        console.error("Error al cargar los productos:", error);
-    }
-}
-
-// Mostrar productos en el contenedor
-function displayProducts(products) {
-    const cardContainer = document.getElementById("cardContainer");
-    cardContainer.innerHTML = ""; // Limpiar contenedor antes de mostrar nuevos productos
-
-    products.forEach(product => {
-        const card = document.createElement("div");
-        card.classList.add("card");
-
-        const title = document.createElement("h2");
-        title.textContent = product.title;
-
-        const price = document.createElement("p");
-        price.textContent = `Precio: $${product.price}`;
-
-        const description = document.createElement("p");
-        description.textContent = product.description;
-
-        const category = document.createElement("p");
-        category.textContent = `Categoría: ${product.category}`;
-
-        const subcategory = document.createElement("p");
-        subcategory.textContent = `Subcategoría: ${product.subcategory || 'N/A'}`;
-
-        const color = document.createElement("p");
-        color.textContent = `Color: ${product.color || 'N/A'}`;
-
-        const size = document.createElement("p");
-        size.textContent = `Talla: ${product.size || 'N/A'}`;
-
-        const image = document.createElement("img");
-        image.src = product.imageUrl || 'ruta-a-imagen-por-defecto.jpg';  // Ruta por defecto si no hay imagen
-        image.alt = product.title;
-
-        card.appendChild(image);
-        card.appendChild(title);
-        card.appendChild(price);
-        card.appendChild(description);
-        card.appendChild(category);
-        card.appendChild(subcategory);
-        card.appendChild(color);
-        card.appendChild(size);
-
-        cardContainer.appendChild(card);
-    });
-}
-
-// Generar botones de categorías dinámicas
-function generateCategoryFilters(products) {
-    const categoryFilters = document.getElementById("categoryFilters");
-    categoryFilters.innerHTML = ""; // Limpiar filtros
-
-    const categories = [...new Set(products.map(product => product.category))];
-    categories.forEach(category => {
-        const button = document.createElement("button");
-        button.textContent = category;
-        button.onclick = () => filterByCategory(category, products);
-        categoryFilters.appendChild(button);
-    });
-}
-
-// Filtrar por categoría
-function filterByCategory(category, products) {
-    const filteredProducts = products.filter(product => product.category === category);
-    displayProducts(filteredProducts);
-    generateSubcategoryFilters(filteredProducts);  // Actualizar filtros de subcategoría
-}
-
-// Generar botones de subcategorías dinámicas
-function generateSubcategoryFilters(products) {
-    const subcategoryFilters = document.getElementById("subcategoryFilters");
-    subcategoryFilters.innerHTML = ""; // Limpiar filtros
-
-    const subcategories = [...new Set(products.map(product => product.subcategory))];
-    subcategories.forEach(subcategory => {
-        const button = document.createElement("button");
-        button.textContent = subcategory || 'N/A';  // Mostrar 'N/A' si no hay subcategoría
-        button.onclick = () => filterBySubcategory(subcategory, products);
-        subcategoryFilters.appendChild(button);
-    });
-}
-
-// Filtrar por subcategoría
-function filterBySubcategory(subcategory, products) {
-    const filteredProducts = products.filter(product => product.subcategory === subcategory || subcategory === 'N/A');
-    displayProducts(filteredProducts);
-}
-
-// Ordenar por precio
-function sortByPrice(order) {
-    const sortedProducts = [...allProducts].sort((a, b) => {
-        return order === "asc" ? a.price - b.price : b.price - a.price;
-    });
-    displayProducts(sortedProducts);
-}
-
-// Ordenar por título
-function sortByTitle(order) {
-    const sortedProducts = [...allProducts].sort((a, b) => {
-        return order === "asc" ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
-    });
-    displayProducts(sortedProducts);
-}
-
-// Generar botones de filtros para tallas y colores
-function generateOtherFilters(products) {
-    const sizeFilters = document.getElementById("sizeFilters");
-    const colorFilters = document.getElementById("colorFilters");
-
-    // Limpiar filtros previos
-    sizeFilters.innerHTML = "";
-    colorFilters.innerHTML = "";
-
-    // Extraer tallas y colores únicos
-    const sizes = [...new Set(products.map(product => product.size))].filter(size => size && size !== "N/A");
-    const colors = [...new Set(products.map(product => product.color))].filter(color => color && color !== "Sin color");
-
-    // Generar botones para tallas
-    sizes.forEach(size => {
-        const button = document.createElement("button");
-        button.textContent = size;
-        button.onclick = () => filterBySize(size, products);
-        sizeFilters.appendChild(button);
-    });
-
-    // Generar botones para colores
-    colors.forEach(color => {
-        const button = document.createElement("button");
-        button.textContent = color;
-        button.style.backgroundColor = color; // Opcional: usa el color como fondo si es un nombre de color válido
-        button.onclick = () => filterByColor(color, products);
-        colorFilters.appendChild(button);
-    });
-}
-
-// Filtrar por talla
-function filterBySize(size, products) {
-    const filteredProducts = products.filter(product => product.size === size);
-    displayProducts(filteredProducts);
-}
-function filterByColor(color, products) {
-    const filteredProducts = products.filter(product => product.color.toLowerCase() === color.toLowerCase());
-    displayProducts(filteredProducts);
-}
-
-
-// Cargar productos y filtros al iniciar la página
-document.addEventListener("DOMContentLoaded", loadProducts);
-
+    
+        function filterBySize(size, products) {
+            const filtered = products.filter(p => p.size === size);
+            displayProducts(filtered);
+        }
+    
+        function filterByColor(color, products) {
+            const filtered = products.filter(p => p.color.toLowerCase() === color.toLowerCase());
+            displayProducts(filtered);
+        }
+    
         async function loadCategoriesAndSubcategories() {
             try {
                 const response = await fetch("https://nantli-backend.onrender.com/fetch-sheet");
-if (!response.ok) {
-    throw new Error(`Error al obtener datos: ${response.statusText}`);
-}
+                if (!response.ok) throw new Error(`Error al obtener datos: ${response.statusText}`);
                 const products = await response.json();
-        
-                // Extraer categorías únicas
-                const categories = [...new Set(products.map(product => product.category))];
-                const price = document.getElementById("price").value;
-
-                // Crear un mapa con las subcategorías agrupadas por categoría
+    
+                const categories = [...new Set(products.map(p => p.category))];
                 const subcategoriesByCategory = products.reduce((acc, product) => {
                     if (!acc[product.category]) acc[product.category] = new Set();
                     if (product.subcategory) acc[product.category].add(product.subcategory);
                     return acc;
                 }, {});
-        
-                // Cargar las categorías en el select de categoría
+    
                 const categorySelect = document.getElementById("category");
                 categorySelect.innerHTML = `<option value="">Seleccione una categoría</option>`;
-                categories.forEach(category => {
-                    categorySelect.innerHTML += `<option value="${category}">${category}</option>`;
+                categories.forEach(cat => {
+                    categorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
                 });
                 categorySelect.innerHTML += `<option value="otro">Otro</option>`;
-        
-                // Manejar cambios en el select de categoría
+    
                 categorySelect.addEventListener("change", function () {
                     const selectedCategory = this.value;
                     const newCategoryInput = document.getElementById("newCategory");
                     const subcategoryContainer = document.querySelector(".subcategory-container");
                     const subcategorySelect = document.getElementById("subcategory");
-        
-                    // Mostrar o esconder el input para una nueva categoría
+    
                     newCategoryInput.style.display = selectedCategory === "otro" ? "block" : "none";
-        
-                    // Actualizar las opciones de subcategorías basadas en la categoría seleccionada
+    
                     if (subcategoriesByCategory[selectedCategory]) {
                         subcategoryContainer.style.display = "block";
                         subcategorySelect.innerHTML = `<option value="">Seleccione una subcategoría</option>`;
-                        subcategoriesByCategory[selectedCategory].forEach(subcategory => {
-                            subcategorySelect.innerHTML += `<option value="${subcategory}">${subcategory}</option>`;
+                        subcategoriesByCategory[selectedCategory].forEach(subcat => {
+                            subcategorySelect.innerHTML += `<option value="${subcat}">${subcat}</option>`;
                         });
                         subcategorySelect.innerHTML += `<option value="otra">Otra</option>`;
                     } else {
-                        subcategoryContainer.style.display = "none"; // Oculta subcategorías si no hay
+                        subcategoryContainer.style.display = "none";
                     }
                 });
-        
-                // Manejar cambios en el select de subcategorías
-                const subcategorySelect = document.getElementById("subcategory");
-                const newSubcategoryInput = document.getElementById("newSubcategory");
-                subcategorySelect.addEventListener("change", function () {
-                    newSubcategoryInput.style.display = this.value === "otra" ? "block" : "none";
+    
+                document.getElementById("subcategory").addEventListener("change", function () {
+                    document.getElementById("newSubcategory").style.display = this.value === "otra" ? "block" : "none";
                 });
             } catch (error) {
-                console.error("Error al cargar categorías y subcategorías:", error);
+                console.error("Error al cargar categorías:", error);
             }
         }
-        
-
-        
+    
         async function addProduct() {
-            const title = document.getElementById("title").value;
-            const description = document.getElementById("description").value;
-            const category = document.getElementById("category").value !== "otro"
-                ? document.getElementById("category").value
-                : document.getElementById("newCategory").value;
-            const subcategory = document.getElementById("hasSubcategory").checked
-                ? (document.getElementById("subcategory").value !== "otra"
-                    ? document.getElementById("subcategory").value
-                    : document.getElementById("newSubcategory").value)
-                : "";
-            const color = document.getElementById("color").value;
-            const imageUrl = document.getElementById("imageUrl").value;
-
-            const sizes = Array.from(document.querySelectorAll(".size-checkbox"))
-                .filter(checkbox => checkbox.checked)
-                .map(checkbox => {
-                    const quantityInput = checkbox.closest(".size-item").querySelector(".size-quantity");
-                    return { size: checkbox.value, quantity: quantityInput.value };
-                });
-
-                const data = sizes.length > 0
-                ? sizes.map(sizeData => ({ title, price, description, category, subcategory, color, size: sizeData.size, quantity: sizeData.quantity, imageUrl }))
-                : [{ title, price, description, category, subcategory, color, size: "", quantity: "", imageUrl }];
-            
-            try {
-                const response = await fetch("https://nantli-backend.onrender.com/add-product", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data),
-                });
-
-                if (response.ok) {
-                    alert("Producto(s) registrado(s) con éxito.");
-                } else {
-                    alert("Error al registrar el producto.");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Error en la conexión.");
-            }
-        }
-        
-       
-
-        // Mostrar el formulario emergente
-        function showForm() {
-            const formContainer = document.getElementById("formContainer");
-            formContainer.style.display = "flex";
-        }
-
-        // Ocultar el formulario emergente
-        function hideForm() {
-            const formContainer = document.getElementById("formContainer");
-            formContainer.style.display = "none";
-        }
-
-        async function addProduct() {
+            const submitButton = document.getElementById("submitButton");
+            submitButton.disabled = true;
+    
             const title = document.getElementById("title").value.trim();
             const description = document.getElementById("description").value.trim();
-            const price = parseFloat(document.getElementById("price").value); // Asegurar que el precio sea un número
+            const price = parseFloat(document.getElementById("price").value);
             const category = document.getElementById("category").value !== "otro"
                 ? document.getElementById("category").value
                 : document.getElementById("newCategory").value.trim();
@@ -500,63 +317,42 @@ if (!response.ok) {
                 : "";
             const color = document.getElementById("color").value.trim();
             const imageUrl = document.getElementById("imageUrl").value.trim();
-        
-            // Obtener las tallas seleccionadas y sus cantidades
+    
             const sizes = Array.from(document.querySelectorAll(".size-checkbox"))
                 .filter(checkbox => checkbox.checked)
                 .map(checkbox => {
                     const quantityInput = checkbox.closest(".size-item").querySelector(".size-quantity");
-                    const quantity = parseInt(quantityInput.value, 10); // Convertir cantidad a número
+                    const quantity = parseInt(quantityInput.value, 10);
                     return { size: checkbox.value, quantity };
                 });
-        
-            // Validar los campos obligatorios antes de enviar
+    
             if (!title || !description || isNaN(price) || !category || !color || !imageUrl) {
                 alert("Por favor, complete todos los campos obligatorios.");
+                submitButton.disabled = false;
                 return;
             }
-        
+    
             if (sizes.length > 0 && sizes.some(size => isNaN(size.quantity) || size.quantity <= 0)) {
                 alert("Por favor, ingrese cantidades válidas para las tallas seleccionadas.");
+                submitButton.disabled = false;
                 return;
             }
-        
-            // Preparar los datos para el envío
+    
             const data = sizes.length > 0
-                ? sizes.map(sizeData => ({
-                    title,
-                    price,
-                    description,
-                    category,
-                    subcategory,
-                    color,
-                    size: sizeData.size,
-                    quantity: sizeData.quantity,
-                    imageUrl
-                }))
-                : [{
-                    title,
-                    price,
-                    description,
-                    category,
-                    subcategory,
-                    color,
-                    size: "",
-                    quantity: "",
-                    imageUrl
-                }];
-        
+                ? sizes.map(s => ({ title, price, description, category, subcategory, color, size: s.size, quantity: s.quantity, imageUrl }))
+                : [{ title, price, description, category, subcategory, color, size: "", quantity: "", imageUrl }];
+    
             try {
                 const response = await fetch("https://nantli-backend.onrender.com/add-product", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data), // Enviar datos como JSON
+                    body: JSON.stringify(data),
                 });
-        
+    
                 if (response.ok) {
                     alert("Producto(s) registrado(s) con éxito.");
                     hideForm();
-                    loadProducts(); // Recargar productos después del registro
+                    loadProducts();
                 } else {
                     const errorText = await response.text();
                     alert(`Error al registrar el producto: ${errorText}`);
@@ -564,44 +360,19 @@ if (!response.ok) {
             } catch (error) {
                 console.error("Error en la conexión:", error);
                 alert("Error en la conexión. Por favor, intente de nuevo.");
+            } finally {
+                submitButton.disabled = false;
             }
         }
-        
-        // Cargar productos al iniciar la página
-        document.addEventListener("DOMContentLoaded", loadProducts);
-        // Cargar productos al iniciar la página
-        // Cargar categorías y subcategorías al iniciar la página
-    document.addEventListener("DOMContentLoaded", () => {
-        loadCategoriesAndSubcategories();
-        loadProducts();
-    });
-        document.getElementById("category").addEventListener("change", function() {
-            const newCategoryInput = document.getElementById("newCategory");
-            if (this.value === "otro") {
-                newCategoryInput.style.display = "block";
-            } else {
-                newCategoryInput.style.display = "none";
-            }
-        });
-
-        document.getElementById("hasSubcategory").addEventListener("change", function() {
-            const subcategoryContainer = document.querySelector(".subcategory-container");
-            subcategoryContainer.style.display = this.checked ? "block" : "none";
-        });
-
-        document.getElementById("subcategory").addEventListener("change", function() {
-            const newSubcategoryInput = document.getElementById("newSubcategory");
-            if (this.value === "otra") {
-                newSubcategoryInput.style.display = "block";
-            } else {
-                newSubcategoryInput.style.display = "none";
-            }
-        });
-
-        document.getElementById("hasSize").addEventListener("change", function() {
-            const sizeContainer = document.getElementById("sizeContainer");
-            sizeContainer.style.display = this.checked ? "block" : "none";
-        });
+    
+        function showForm() {
+            document.getElementById("formContainer").style.display = "flex";
+        }
+    
+        function hideForm() {
+            document.getElementById("formContainer").style.display = "none";
+        }
     </script>
+    
 </body>
 </html>
