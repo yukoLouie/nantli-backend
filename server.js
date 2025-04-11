@@ -3,10 +3,9 @@ const bodyParser = require("body-parser");
 const { google } = require("googleapis");
 const cors = require("cors");
 const fs = require("fs");
-const https = require("https");
 
 const app = express();
-const PORT = process.env.PORT || 3001; // Usa el puerto proporcionado por Render si está disponible
+const PORT = process.env.PORT || 3001;
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -20,10 +19,9 @@ const auth = new google.auth.GoogleAuth({
 const SPREADSHEET_ID = "1S9F85vLGgpcxcvPVH4nXVM_eB7aYsliBUBUCAwnPOkY";
 
 // ===================== AGREGAR PRODUCTOS =====================
-// ===================== AGREGAR PRODUCTOS ===================== 
 app.post("/add-product", async (req, res) => {
     try {
-        const data = req.body; // data es ahora un arreglo de productos
+        const data = req.body;
 
         if (!Array.isArray(data) || data.length === 0) {
             return res.status(400).send("La solicitud debe ser un arreglo de productos.");
@@ -91,9 +89,14 @@ app.post("/add-product", async (req, res) => {
     }
 });
 
-// Otros endpoints aquí...
+// Aquí puedes seguir con el resto de tus endpoints como update-inventory, get-product-by-id, etc.
 
-// Asegúrate de que el servidor escuche en el puerto proporcionado por Render
+// ===================== RUTA DE PRUEBA =====================
+app.get("/", (req, res) => {
+    res.send("Servidor funcionando. Usa /add-product para agregar productos.");
+});
+
+// ===================== INICIAR SERVIDOR =====================
 app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Servidor HTTPS corriendo en https://localhost:${PORT}`);
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
