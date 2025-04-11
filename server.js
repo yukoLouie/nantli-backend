@@ -16,14 +16,14 @@ app.use("/qrcodes", express.static("qrcodes"));
 // ✅ Servir archivos estáticos (como index.html y otros recursos)
 app.use(express.static(path.join(__dirname, "public")));
 
-// Google Auth
+// Spreadsheet ID
+const SPREADSHEET_ID = "1S9F85vLGgpcxcvPVH4nXVM_eB7aYsliBUBUCAwnPOkY";
+
+// ✅ Google Auth usando secreto de Render
 const auth = new google.auth.GoogleAuth({
-    keyFile: path.join(__dirname, "config", "nantli-456106-6f611c3d6987.json"), // Cambia la ruta según la ubicación real del archivo
+    keyFile: "/etc/secrets/nantli-456106-6f611c3d6987.json",
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
-
-
-const SPREADSHEET_ID = "1S9F85vLGgpcxcvPVH4nXVM_eB7aYsliBUBUCAwnPOkY";
 
 // ===================== AGREGAR PRODUCTOS =====================
 app.post("/add-product", async (req, res) => {
@@ -99,6 +99,7 @@ app.post("/add-product", async (req, res) => {
         res.status(500).send("Ocurrió un error al registrar el producto.");
     }
 });
+
 app.get("/fetch-sheet", async (req, res) => {
     try {
         const client = await auth.getClient();
@@ -111,15 +112,16 @@ app.get("/fetch-sheet", async (req, res) => {
 
         const rows = response.data.values || [];
         const headers = rows[0];
-const products = rows.slice(1).map(row => {
-    const product = {};
-    headers.forEach((header, index) => {
-        product[header] = row[index] || "";
-    });
-    return product;
-});
-        res.json(products);
 
+        const products = rows.slice(1).map(row => {
+            const product = {};
+            headers.forEach((header, index) => {
+                product[header] = row[index] || "";
+            });
+            return product;
+        });
+
+        res.json(products);
     } catch (error) {
         console.error("Error al obtener datos de la hoja:", error.message);
         res.status(500).send("Error al obtener datos de la hoja");
