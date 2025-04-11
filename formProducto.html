@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+        .card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .card h2 {
+            margin: 10px 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .card p {
+            margin: 5px 0;
+            font-size: 16px;
+            color: #555;
+        }
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #0d6efd;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            cursor: pointer;
+        }
+        .floating-btn:hover {
+            background-color: #0b5ed7;
+        }
+        .form-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .form-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .form-content h2 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Listado de Productos</h1>
+    <div class="card-container" id="cardContainer"></div>
+    
+    <!-- Botón flotante -->
+    <button class="floating-btn" onclick="showForm()">
+        <i class="bi bi-plus"></i> <!-- Ícono de Bootstrap -->
+    </button>
+    
+    <!-- Formulario emergente -->
+    <div class="form-container" id="formContainer">
+        <div class="form-content">
+            <h2>Agregar Nuevo Producto</h2>
+            <form id="addProductForm">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="title" placeholder="Ejemplo: Título del producto">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="price" placeholder="Ejemplo: 100.00">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="description" placeholder="Ejemplo: Descripción breve">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="category" placeholder="Ejemplo: Categoría general">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="color" placeholder="Ejemplo: Rojo, Azul">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="size" placeholder="Ejemplo: M, L, XL (opcional)">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="quantity" placeholder="Ejemplo: 10">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="imageUrl" placeholder="Ejemplo: https://imagen.com/ejemplo.jpg">
+                </div>
+                <button type="button" class="btn btn-primary btn-block" onclick="addProduct()">Registrar Producto</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showForm() {
+            document.getElementById("formContainer").style.display = "flex";
+        }
+
+        function hideForm() {
+            document.getElementById("formContainer").style.display = "none";
+        }
+
+        function addProduct() {
+            const title = document.getElementById("title").value;
+            const price = document.getElementById("price").value;
+            const description = document.getElementById("description").value;
+            const category = document.getElementById("category").value;
+            const color = document.getElementById("color").value;
+            const size = document.getElementById("size").value || "N/A";
+            const quantity = document.getElementById("quantity").value;
+            const imageUrl = document.getElementById("imageUrl").value;
+
+            const productData = { title, price, description, category, color, size, quantity, imageUrl };
+
+            console.log("Datos del producto:", productData); // Para depuración
+
+            // Aquí agregarías una lógica para enviar 'productData' a tu servidor/hoja de cálculo.
+            alert("Producto registrado con éxito (simulado)!");
+            hideForm(); // Cerrar formulario
+        }
+    </script>
+</body>
+</html>

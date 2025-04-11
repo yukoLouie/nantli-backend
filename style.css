@@ -1,0 +1,50 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  h1 {
+    text-align: center;
+  }
+  
+  #fileInput {
+    display: block;
+    margin: 20px auto;
+  }
+  
+  #productCatalog {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  
+  .card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: 250px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card .title {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .card .description {
+    margin: 10px 0;
+    color: #555;
+  }
+  
+  .card .color {
+    font-style: italic;
+  }
+  
+  .card .category {
+    color: #007BFF;
+  }
+  
