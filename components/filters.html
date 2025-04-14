@@ -1,0 +1,40 @@
+<!-- Filtros -->
+<div class="mb-4">
+  <input 
+    type="text" 
+    id="searchInput" 
+    class="form-control mb-3" 
+    placeholder="Buscar por ID, título, descripción, etc." 
+    autocomplete="off"
+  >
+
+  <div class="mb-3">
+    <strong>Categoría:</strong>
+    <div id="categoryButtons" class="btn-group flex-wrap d-flex gap-2"></div>
+  </div>
+
+  <div class="mb-3">
+    <strong>Subcategoría:</strong>
+    <div id="subcategoryButtons" class="btn-group flex-wrap d-flex gap-2"></div>
+  </div>
+
+  <div class="mb-3">
+    <strong>Talla:</strong>
+    <div id="sizeButtons" class="btn-group flex-wrap d-flex gap-2"></div>
+  </div>
+
+  <div class="mb-3">
+    <strong>Color:</strong>
+    <div id="colorButtons" class="btn-group flex-wrap d-flex gap-2"></div>
+  </div>
+
+  <button type="button" class="btn btn-outline-danger mt-2" onclick="clearFilters()">Limpiar Filtros</button>
+</div>
+
+<!-- Ordenamiento -->
+<div class="mb-3 d-flex flex-wrap gap-2">
+  <button type="button" class="btn btn-outline-primary btn-sm" onclick="sortByPrice('asc')">Precio: Menor a Mayor</button>
+  <button type="button" class="btn btn-outline-primary btn-sm" onclick="sortByPrice('desc')">Precio: Mayor a Menor</button>
+  <button type="button" class="btn btn-outline-primary btn-sm" onclick="sortByTitle('asc')">Título: A-Z</button>
+  <button type="button" class="btn btn-outline-primary btn-sm" onclick="sortByTitle('desc')">Título: Z-A</button>
+</div>
