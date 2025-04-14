@@ -7,8 +7,7 @@ const path = require("path");
 const QRCode = require("qrcode");
 const multer = require("multer");
 const cloudinary = require('cloudinary').v2;
-
-c 
+ 
 const PORT = process.env.PORT || 3001;
 
 // Carpeta para guardar imágenes y códigos QR
