@@ -1,9 +1,4 @@
-// Variables globales
-let productosOriginales = [];
-let selectedCategory = null;
-let selectedSubcategory = null;
-let selectedSize = null;
-let selectedColor = null;
+ 
 
 // Cargar productos desde el backend
 async function loadProducts() {

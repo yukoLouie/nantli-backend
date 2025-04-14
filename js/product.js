@@ -1,5 +1,5 @@
 // product.js
-
+ 
 // Renderiza las tarjetas de producto en el contenedor
 function renderCards(productos) {
   const container = document.getElementById("cardContainer");
@@ -15,13 +15,28 @@ function renderCards(productos) {
       <div class="card-body">
         <h5 class="card-title">${product.titulo}</h5>
         <p class="card-text"><strong>Precio:</strong> $${product.precio}</p>
-        <button class="btn btn-primary btn-sm" onclick='showProductModal(${JSON.stringify(product)})'>Ver más</button>
+        <div class="d-flex justify-content-between">
+          <button class="btn btn-sm btn-secondary ver-mas-btn">Ver más</button>
+          <button class="btn btn-sm btn-success agregar-btn">Agregar</button>
+        </div>
       </div>
     `;
+
+    // Botón "Ver más"
+    const verMasBtn = card.querySelector(".ver-mas-btn");
+    verMasBtn.addEventListener("click", () => showProductModal(product));
+
+    // Botón "Agregar al carrito"
+    const agregarBtn = card.querySelector(".agregar-btn");
+    agregarBtn.addEventListener("click", () => {
+      addToCart(product.id, product.talla, 1);
+    });
 
     container.appendChild(card);
   });
 }
+
+
 
 // Ordenar productos por precio
 function sortByPrice(order) {
@@ -63,7 +78,7 @@ async function addToCart(productId, size, quantity) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    
+
     const data = await response.json();
     console.log(data); // Aquí puedes manejar la respuesta, como mostrar un mensaje o actualizar el carrito
   } catch (error) {
@@ -99,9 +114,6 @@ function showProductModal(product) {
   `;
   $('#productModal').modal('show');
 }
-
-// Variable global para almacenar los productos obtenidos
-let productosOriginales = [];
 
 // Al cargar la página, obtenemos los productos
 window.onload = function() {
