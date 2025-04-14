@@ -6,6 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const QRCode = require("qrcode");
 const multer = require("multer");
+const cloudinary = require('cloudinary').v2;
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,6 +16,13 @@ const IMAGE_FOLDER = path.join(__dirname, "images");
 const QR_FOLDER = path.join(__dirname, "qrcodes");
 fs.mkdirSync(IMAGE_FOLDER, { recursive: true });
 fs.mkdirSync(QR_FOLDER, { recursive: true });
+
+// Configuración de Cloudinary
+cloudinary.config({
+  cloud_name: 'dopzonzq4',
+  api_key: '828323364486141',
+  api_secret: 'tuEV6WU4XR-UoULglLFNsRhOb64'
+});
 
 // Middleware para subir imágenes con Multer
 const storage = multer.diskStorage({
@@ -43,6 +51,7 @@ const auth = new google.auth.GoogleAuth({
 });
 
 // ========== Agregar producto ==========
+
 app.post("/add-product", upload.single("image"), async (req, res) => {
     try {
         const body = req.body;
@@ -84,13 +93,28 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
                 continue;
             }
 
+            // Generar el archivo QR
             const qrFileName = `${id}_qr.png`;
             const qrFilePath = path.join(QR_FOLDER, qrFileName);
             await QRCode.toFile(qrFilePath, id, {
                 color: { dark: "#000", light: "#FFF" },
             });
-            const qrUrl = `https://nantli-backend.onrender.com/qrcodes/${qrFileName}`;
 
+            // Subir el QR a Cloudinary
+            const qrBuffer = fs.readFileSync(qrFilePath); // Leer el QR como buffer
+            const cloudinaryResult = await new Promise((resolve, reject) => {
+                cloudinary.uploader.upload_stream(
+                    { resource_type: 'auto' },
+                    (error, result) => {
+                        if (error) reject(error);
+                        resolve(result);
+                    }
+                ).end(qrBuffer);
+            });
+
+            const qrUrl = cloudinaryResult.secure_url;
+
+            // Subir imagen del producto (si existe)
             let imageUrl = product.imageUrl || "";
             if (imageFile) {
                 imageUrl = `https://nantli-backend.onrender.com/images/${imageFile.filename}`;
@@ -131,82 +155,81 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
     }
 });
 
+// ========== Obtener categorías y subcategorías ==========
 
 app.get("/categorias-subcategorias", async (req, res) => {
     try {
-      const client = await auth.getClient();
-      const sheets = google.sheets({ version: "v4", auth: client });
-  
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: "Hoja 1",
-      });
-  
-      const rows = response.data.values || [];
-      const headers = rows[0] || [];
-  
-      // Mapeo de encabezados a índice (en minúsculas para mayor robustez)
-      const headerMap = headers.reduce((acc, h, i) => {
-        acc[h.toLowerCase().trim()] = i;
-        return acc;
-      }, {});
-  
-      const categoryIndex =
-        headerMap["categoria"] ?? headerMap["category"] ?? -1;
-      const subcategoryIndex =
-        headerMap["subcategoria"] ?? headerMap["subcategory"] ?? -1;
-  
-      if (categoryIndex === -1 || subcategoryIndex === -1) {
-        console.error(
-          "No se encontraron las columnas 'categoria/category' o 'subcategoria/subcategory'."
-        );
-        return res
-          .status(400)
-          .json({ message: "Encabezados no encontrados en la hoja." });
-      }
-  
-      const categorias = new Set();
-      const subcategoriasPorCategoria = {};
-  
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        const categoria = row[categoryIndex]?.trim();
-        const subcategoria = row[subcategoryIndex]?.trim();
-  
-        if (categoria) {
-          categorias.add(categoria);
-          if (!subcategoriasPorCategoria[categoria]) {
-            subcategoriasPorCategoria[categoria] = new Set();
-          }
-          if (subcategoria) {
-            subcategoriasPorCategoria[categoria].add(subcategoria);
-          }
+        const client = await auth.getClient();
+        const sheets = google.sheets({ version: "v4", auth: client });
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: "Hoja 1",
+        });
+
+        const rows = response.data.values || [];
+        const headers = rows[0] || [];
+
+        const headerMap = headers.reduce((acc, h, i) => {
+            acc[h.toLowerCase().trim()] = i;
+            return acc;
+        }, {});
+
+        const categoryIndex =
+            headerMap["categoria"] ?? headerMap["category"] ?? -1;
+        const subcategoryIndex =
+            headerMap["subcategoria"] ?? headerMap["subcategory"] ?? -1;
+
+        if (categoryIndex === -1 || subcategoryIndex === -1) {
+            console.error(
+                "No se encontraron las columnas 'categoria/category' o 'subcategoria/subcategory'."
+            );
+            return res
+                .status(400)
+                .json({ message: "Encabezados no encontrados en la hoja." });
         }
-      }
-  
-      const categoriasArray = Array.from(categorias);
-      const subcategoriasObj = {};
-      for (const cat of categoriasArray) {
-        subcategoriasObj[cat] = Array.from(
-          subcategoriasPorCategoria[cat] || []
-        );
-      }
-  
-      res.json({
-        categorias: categoriasArray,
-        subcategorias: subcategoriasObj,
-      });
+
+        const categorias = new Set();
+        const subcategoriasPorCategoria = {};
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const categoria = row[categoryIndex]?.trim();
+            const subcategoria = row[subcategoryIndex]?.trim();
+
+            if (categoria) {
+                categorias.add(categoria);
+                if (!subcategoriasPorCategoria[categoria]) {
+                    subcategoriasPorCategoria[categoria] = new Set();
+                }
+                if (subcategoria) {
+                    subcategoriasPorCategoria[categoria].add(subcategoria);
+                }
+            }
+        }
+
+        const categoriasArray = Array.from(categorias);
+        const subcategoriasObj = {};
+        for (const cat of categoriasArray) {
+            subcategoriasObj[cat] = Array.from(
+                subcategoriasPorCategoria[cat] || []
+            );
+        }
+
+        res.json({
+            categorias: categoriasArray,
+            subcategorias: subcategoriasObj,
+        });
     } catch (error) {
-      console.error("Error al obtener categorías y subcategorías:", error);
-      res
-        .status(500)
-        .json({ message: "Error interno al obtener categorías y subcategorías." });
+        console.error("Error al obtener categorías y subcategorías:", error);
+        res
+            .status(500)
+            .json({ message: "Error interno al obtener categorías y subcategorías." });
     }
-  });
-  
-  
-  
+});
+
 // ========== Obtener productos ==========
+
 app.get("/fetch-sheet", async (req, res) => {
     try {
         const client = await auth.getClient();
@@ -234,6 +257,7 @@ app.get("/fetch-sheet", async (req, res) => {
 });
 
 // ========== Servir index.html por defecto ==========
+
 app.get("*", (req, res) => {
     const indexPath = path.join(__dirname, "public", "index.html");
     if (fs.existsSync(indexPath)) {
@@ -244,6 +268,7 @@ app.get("*", (req, res) => {
 });
 
 // ========== Iniciar servidor ==========
+
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
