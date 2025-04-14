@@ -134,12 +134,25 @@ app.get("/categorias-subcategorias", async (req, res) => {
   
       const rows = response.data.values || [];
       const headers = rows[0] || [];
-      const categoryIndex = headers.indexOf("category");
-      const subcategoryIndex = headers.indexOf("subcategory");
+  
+      // Mapeo de encabezados a índice (en minúsculas para mayor robustez)
+      const headerMap = headers.reduce((acc, h, i) => {
+        acc[h.toLowerCase().trim()] = i;
+        return acc;
+      }, {});
+  
+      const categoryIndex =
+        headerMap["categoria"] ?? headerMap["category"] ?? -1;
+      const subcategoryIndex =
+        headerMap["subcategoria"] ?? headerMap["subcategory"] ?? -1;
   
       if (categoryIndex === -1 || subcategoryIndex === -1) {
-        console.error("No se encontraron las columnas 'category' o 'subcategory'.");
-        return res.status(400).json({ message: "Encabezados no encontrados en la hoja." });
+        console.error(
+          "No se encontraron las columnas 'categoria/category' o 'subcategoria/subcategory'."
+        );
+        return res
+          .status(400)
+          .json({ message: "Encabezados no encontrados en la hoja." });
       }
   
       const categorias = new Set();
@@ -164,18 +177,23 @@ app.get("/categorias-subcategorias", async (req, res) => {
       const categoriasArray = Array.from(categorias);
       const subcategoriasObj = {};
       for (const cat of categoriasArray) {
-        subcategoriasObj[cat] = Array.from(subcategoriasPorCategoria[cat] || []);
+        subcategoriasObj[cat] = Array.from(
+          subcategoriasPorCategoria[cat] || []
+        );
       }
   
       res.json({
         categorias: categoriasArray,
-        subcategorias: subcategoriasObj
+        subcategorias: subcategoriasObj,
       });
     } catch (error) {
       console.error("Error al obtener categorías y subcategorías:", error);
-      res.status(500).json({ message: "Error interno al obtener categorías y subcategorías." });
+      res
+        .status(500)
+        .json({ message: "Error interno al obtener categorías y subcategorías." });
     }
   });
+  
   
   
 // ========== Obtener productos ==========
