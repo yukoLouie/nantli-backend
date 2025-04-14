@@ -56,18 +56,8 @@ function sortByTitle(order) {
   renderCards(sorted);
 }
 
-// Función para obtener productos desde el backend
-async function fetchProducts() {
-  try {
-    const response = await fetch('/fetch-sheet');
-    const productos = await response.json();
-    productosOriginales = productos; // Guardamos los productos para ordenar luego
-    renderCards(productos); // Renderizamos los productos en el contenedor
-  } catch (error) {
-    console.error("Error al obtener productos:", error);
-  }
-}
-
+ 
+ 
 // Función para agregar un producto al carrito
 async function addToCart(productId, size, quantity) {
   const body = { productId, size, quantity };
@@ -115,7 +105,4 @@ function showProductModal(product) {
   $('#productModal').modal('show');
 }
 
-// Al cargar la página, obtenemos los productos
-window.onload = function() {
-  fetchProducts(); // Carga los productos al iniciar
-};
+ 
