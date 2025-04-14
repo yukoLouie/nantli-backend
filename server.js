@@ -217,6 +217,8 @@ app.post("/add-to-cart", async (req, res) => {
   }
 });
 
+const SHEET_NAME = 'Hoja 1'; // Sustituye 'Productos' con el nombre real de tu hoja
+
 // ========== Checkout ==========
 // ========== Checkout ========== 
 app.post("/checkout", async (req, res) => {
