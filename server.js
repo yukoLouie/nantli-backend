@@ -218,6 +218,7 @@ app.post("/add-to-cart", async (req, res) => {
 });
 
 // ========== Checkout ==========
+// ========== Checkout ========== 
 app.post("/checkout", async (req, res) => {
     try {
       const productos = req.body.productos;
@@ -225,6 +226,10 @@ app.post("/checkout", async (req, res) => {
       if (!Array.isArray(productos)) {
         return res.status(400).json({ message: "Formato de productos incorrecto" });
       }
+  
+      // Obtener el cliente de Google Sheets y la instancia de Sheets API
+      const client = await auth.getClient();
+      const sheets = google.sheets({ version: "v4", auth: client });
   
       // Obtener datos actuales de la hoja
       const { data } = await sheets.spreadsheets.values.get({
@@ -276,6 +281,7 @@ app.post("/checkout", async (req, res) => {
       res.status(500).json({ message: "Error interno al procesar el checkout" });
     }
   });
+  
   
   
 
