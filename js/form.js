@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // Envío del formulario
  // Envío del formulario
-form.addEventListener("submit", async function (e) {
+ form.addEventListener("submit", async function (e) {
   e.preventDefault();
 
   const formData = new FormData(form);
@@ -106,54 +106,62 @@ form.addEventListener("submit", async function (e) {
   const category = formData.get("category") === "nueva" ? formData.get("newCategory") : formData.get("category");
   const subcategory = formData.get("subcategory") === "nueva" ? formData.get("newSubcategory") : formData.get("subcategory");
 
-  // Verificar que se tienen productos antes de crear el arreglo
-  const productos = sizes.length > 0
-    ? sizes.map(s => ({
-        id: productId,
-        title: formData.get("title"),
-        description: formData.get("description"),
-        price: parseFloat(formData.get("price")),
-        category,
-        subcategory,
-        color: formData.get("color"),
-        size: s.size,
-        quantity: s.quantity,
-        imageUrl: formData.get("imageUrl"),
-    }))
-    : [];
-
-  if (productos.length > 0) {
-    // Verificación adicional para asegurar que los campos no estén vacíos
-    const productosJSON = JSON.stringify(productos);
-    
-    try {
-      const response = await fetch("https://nantli-backend.onrender.com/add-product", {
-        method: "POST",
-        body: productosJSON,
-        headers: { "Content-Type": "application/json" }
-      });
-
-      if (response.ok) {
-        const productosExistentes = await fetch("https://nantli-backend.onrender.com/fetch-sheet");
-        const productosData = await productosExistentes.json();
-        renderCards(productosData); // Usamos el método renderCards
-
-        alert("Producto registrado exitosamente!");
-        hideForm(); // Ocultar el formulario
-      } else {
-        alert("Error al registrar el producto.");
-      }
-    } catch (error) {
-      console.error("Error al registrar el producto:", error);
-      alert("Hubo un error al registrar el producto. Intenta nuevamente.");
-    }
-  } else {
+  if (sizes.length === 0) {
     alert("Por favor, agrega al menos una talla con cantidad.");
+    return;
+  }
+
+  const title = formData.get("title");
+  const price = parseFloat(formData.get("price"));
+  const color = formData.get("color");
+  const imageUrl = formData.get("imageUrl");
+
+  if (!title || !price || !color || !imageUrl) {
+    alert("Por favor, completa todos los campos obligatorios.");
+    return;
+  }
+
+  // Crear el arreglo de productos
+  const productos = sizes.map(s => ({
+    id: productId,
+    title,
+    description: formData.get("description"),
+    price,
+    category,
+    subcategory,
+    color,
+    size: s.size,
+    quantity: s.quantity,
+    imageUrl,
+  }));
+
+  // Mostrar en consola para verificar el formato
+  console.log("✅ Array de productos (antes del stringify):", productos);
+  console.log("✅ JSON.stringify(productos):", JSON.stringify(productos));
+
+  try {
+    const response = await fetch("https://nantli-backend.onrender.com/add-product", {
+      method: "POST",
+      body: JSON.stringify(productos),
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (response.ok) {
+      const productosExistentes = await fetch("https://nantli-backend.onrender.com/fetch-sheet");
+      const productosData = await productosExistentes.json();
+      renderCards(productosData);
+
+      alert("Producto registrado exitosamente!");
+      hideForm();
+    } else {
+      alert("Error al registrar el producto.");
+    }
+  } catch (error) {
+    console.error("❌ Error al registrar el producto:", error);
+    alert("Hubo un error al registrar el producto. Intenta nuevamente.");
   }
 });
 
-
-
-  
+ 
   
 });

@@ -45,19 +45,15 @@ const auth = new google.auth.GoogleAuth({
 // ========== Agregar producto ==========
 app.post("/add-product", upload.single("image"), async (req, res) => {
     try {
-        // Obtener datos del cuerpo de la solicitud
         const body = req.body;
         const imageFile = req.file;
 
-        // Verificar que los datos estén presentes en el campo 'data'
         if (!body.data) {
             return res.status(400).send("El campo 'data' es obligatorio.");
         }
 
-        // Parsear el campo 'data' que contiene los productos
-        const data = JSON.parse(body.data); // Enviar campo "data" como string JSON si usas FormData
+        const data = JSON.parse(body.data); // 'data' debe ser un string JSON (arreglo de productos)
 
-        // Verificar que el cuerpo contenga un arreglo de productos
         if (!Array.isArray(data) || data.length === 0) {
             return res.status(400).send("La solicitud debe ser un arreglo de productos.");
         }
@@ -65,33 +61,29 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
         const client = await auth.getClient();
         const sheets = google.sheets({ version: "v4", auth: client });
 
-        // Obtener los datos de la hoja de cálculo
         const sheetData = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
             range: "Hoja 1",
         });
 
         const existingRows = sheetData.data.values || [];
+        const qrResults = [];
 
-        // Iterar sobre los productos a registrar
         for (const product of data) {
             const {
                 id, title, price, description, category,
-                subcategory, color, size, quantity,
+                subcategory, color, size, quantity
             } = product;
 
-            // Verificar que los campos requeridos estén presentes
             if (![id, title, price, description, category, color].every(Boolean)) {
                 return res.status(400).send(`Producto inválido: ${JSON.stringify(product)}`);
             }
 
-            // Verificar si el producto ya existe en la hoja
             if (existingRows.some(row => row[0] === id)) {
                 console.log(`Producto con ID ${id} ya existe. Omitido.`);
                 continue;
             }
 
-            // Generar código QR para el producto
             const qrFileName = `${id}_qr.png`;
             const qrFilePath = path.join(QR_FOLDER, qrFileName);
             await QRCode.toFile(qrFilePath, id, {
@@ -99,13 +91,11 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
             });
             const qrUrl = `https://nantli-backend.onrender.com/qrcodes/${qrFileName}`;
 
-            // Obtener la URL de la imagen (si se subió una imagen con FormData)
             let imageUrl = product.imageUrl || "";
             if (imageFile) {
                 imageUrl = `https://nantli-backend.onrender.com/images/${imageFile.filename}`;
             }
 
-            // Crear una fila para agregar al documento de Google Sheets
             const row = [
                 id,
                 title,
@@ -120,17 +110,21 @@ app.post("/add-product", upload.single("image"), async (req, res) => {
                 qrUrl
             ];
 
-            // Agregar la fila a la hoja de cálculo
             await sheets.spreadsheets.values.append({
                 spreadsheetId: SPREADSHEET_ID,
                 range: "Hoja 1!A1:K1",
                 valueInputOption: "USER_ENTERED",
                 resource: { values: [row] },
             });
+
+            qrResults.push({ id, qrUrl });
         }
 
-        // Responder con éxito
-        res.status(200).send("Producto(s) registrado(s) con éxito con QR.");
+        res.status(200).json({
+            message: "Producto(s) registrado(s) con éxito con QR.",
+            qrResults
+        });
+
     } catch (error) {
         console.error("Error al registrar producto:", error.message);
         res.status(500).send("Error interno al registrar producto.");
