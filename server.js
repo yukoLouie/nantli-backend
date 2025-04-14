@@ -7,41 +7,34 @@ const path = require("path");
 const QRCode = require("qrcode");
 const multer = require("multer");
 const cloudinary = require('cloudinary').v2;
-
-// 🔄 Importar clase del carrito
 const CartManager = require("./js/cartManager");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Carpetas de imágenes y códigos QR
 const IMAGE_FOLDER = path.join(__dirname, "images");
 const QR_FOLDER = path.join(__dirname, "qrcodes");
 fs.mkdirSync(IMAGE_FOLDER, { recursive: true });
 fs.mkdirSync(QR_FOLDER, { recursive: true });
 
-// Configuración Cloudinary
 cloudinary.config({
   cloud_name: 'dopzonzq4',
   api_key: '828323364486141',
   api_secret: 'tuEV6WU4XR-UoULglLFNsRhOb64'
 });
 
-// Middleware para subir imágenes
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, IMAGE_FOLDER),
   filename: (req, file, cb) => cb(null, `${Date.now()}_${file.originalname}`),
 });
 const upload = multer({ storage });
 
-// Middleware general
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(cors());
 app.use("/qrcodes", express.static(QR_FOLDER));
 app.use("/images", express.static(IMAGE_FOLDER));
 app.use(express.static(path.join(__dirname, "public")));
 
-// Google Sheets auth
 const SPREADSHEET_ID = "1S9F85vLGgpcxcvPVH4nXVM_eB7aYsliBUBUCAwnPOkY";
 const auth = new google.auth.GoogleAuth({
   keyFile: "/etc/secrets/nantli-456106-6f611c3d6987.json",
@@ -200,6 +193,27 @@ app.get("/categorias-subcategorias", async (req, res) => {
   } catch (error) {
     console.error("Error al obtener categorías:", error);
     res.status(500).json({ message: "Error interno al obtener categorías y subcategorías." });
+  }
+});
+
+// ========== Agregar producto al carrito ==========
+app.post("/add-to-cart", async (req, res) => {
+  try {
+    const item = req.body; // { productId, size, quantity }
+    if (!item || !item.productId || !item.size || !item.quantity) {
+      return res.status(400).json({ message: "Datos incompletos" });
+    }
+
+    const client = await auth.getClient();
+    const sheets = google.sheets({ version: "v4", auth: client });
+
+    const manager = new CartManager(sheets, SPREADSHEET_ID);
+    await manager.addItemToCart(item);
+
+    res.json({ message: "Producto agregado al carrito." });
+  } catch (error) {
+    console.error("Error al agregar al carrito:", error);
+    res.status(500).json({ message: "Error al agregar al carrito." });
   }
 });
 

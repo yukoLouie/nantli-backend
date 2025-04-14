@@ -1,5 +1,5 @@
 // product.js
- 
+
 // Renderiza las tarjetas de producto en el contenedor
 function renderCards(productos) {
   const container = document.getElementById("cardContainer");
@@ -36,8 +36,6 @@ function renderCards(productos) {
   });
 }
 
-
-
 // Ordenar productos por precio
 function sortByPrice(order) {
   const sorted = [...productosOriginales].sort((a, b) =>
@@ -56,8 +54,6 @@ function sortByTitle(order) {
   renderCards(sorted);
 }
 
- 
- 
 // Función para agregar un producto al carrito
 async function addToCart(productId, size, quantity) {
   const body = { productId, size, quantity };
@@ -104,5 +100,3 @@ function showProductModal(product) {
   `;
   $('#productModal').modal('show');
 }
-
- 
