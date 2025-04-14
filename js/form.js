@@ -90,43 +90,70 @@ document.addEventListener("DOMContentLoaded", async function () {
   };
 
   // Envío del formulario
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
+ // Envío del formulario
+form.addEventListener("submit", async function (e) {
+  e.preventDefault();
 
-    const formData = new FormData(form);
-    const productId = crypto.randomUUID();
+  const formData = new FormData(form);
+  const productId = crypto.randomUUID();
 
-    const sizes = Array.from(document.querySelectorAll(".size-entry")).map(entry => ({
-      size: entry.querySelector(".size-select").value,
-      quantity: parseInt(entry.querySelector(".quantity-input").value)
-    })).filter(s => s.size && !isNaN(s.quantity));
+  // Recoger las tallas y cantidades
+  const sizes = Array.from(document.querySelectorAll(".size-entry")).map(entry => ({
+    size: entry.querySelector(".size-select").value,
+    quantity: parseInt(entry.querySelector(".quantity-input").value)
+  })).filter(s => s.size && !isNaN(s.quantity));
 
-    const category = formData.get("category") === "nueva" ? formData.get("newCategory") : formData.get("category");
-    const subcategory = formData.get("subcategory") === "nueva" ? formData.get("newSubcategory") : formData.get("subcategory");
+  const category = formData.get("category") === "nueva" ? formData.get("newCategory") : formData.get("category");
+  const subcategory = formData.get("subcategory") === "nueva" ? formData.get("newSubcategory") : formData.get("subcategory");
 
-    const productos = sizes.length > 0
-      ? sizes.map(s => ({
-          id: productId,
-          title: formData.get("title"),
-          description: formData.get("description"),
-          price: parseFloat(formData.get("price")),
-          category,
-          subcategory,
-          color: formData.get("color"),
-          size: s.size,
-          quantity: s.quantity,
-          imageUrl: formData.get("imageUrl"),
-      }))
-      : [];
+  // Verificar que se tienen productos antes de crear el arreglo
+  const productos = sizes.length > 0
+    ? sizes.map(s => ({
+        id: productId,
+        title: formData.get("title"),
+        description: formData.get("description"),
+        price: parseFloat(formData.get("price")),
+        category,
+        subcategory,
+        color: formData.get("color"),
+        size: s.size,
+        quantity: s.quantity,
+        imageUrl: formData.get("imageUrl"),
+    }))
+    : [];
 
-    if (productos.length > 0) {
-      await fetch("https://nantli-backend.onrender.com/productos", {
+  if (productos.length > 0) {
+    // Verificación adicional para asegurar que los campos no estén vacíos
+    const productosJSON = JSON.stringify(productos);
+    
+    try {
+      const response = await fetch("https://nantli-backend.onrender.com/add-product", {
         method: "POST",
-        body: JSON.stringify(productos),
+        body: productosJSON,
         headers: { "Content-Type": "application/json" }
       });
-      alert("Producto registrado exitosamente!");
-      hideForm(); // Ocultar el formulario
+
+      if (response.ok) {
+        const productosExistentes = await fetch("https://nantli-backend.onrender.com/fetch-sheet");
+        const productosData = await productosExistentes.json();
+        renderCards(productosData); // Usamos el método renderCards
+
+        alert("Producto registrado exitosamente!");
+        hideForm(); // Ocultar el formulario
+      } else {
+        alert("Error al registrar el producto.");
+      }
+    } catch (error) {
+      console.error("Error al registrar el producto:", error);
+      alert("Hubo un error al registrar el producto. Intenta nuevamente.");
     }
-  });
+  } else {
+    alert("Por favor, agrega al menos una talla con cantidad.");
+  }
+});
+
+
+
+  
+  
 });
