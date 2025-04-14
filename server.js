@@ -8,8 +8,64 @@ const QRCode = require("qrcode");
 const multer = require("multer");
 const cloudinary = require('cloudinary').v2;
 
+const Cart = require("./cart");
+const CartManager = require("./cartManager");
+const Product = require("./product");
+
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Autenticación con Google
+const auth = new google.auth.GoogleAuth({
+    keyFile: "/etc/secrets/nantli-456106-6f611c3d6987.json",
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+});
+
+// Crear instancia de CartManager
+const cartManager = new CartManager(auth, SPREADSHEET_ID);
+
+// Rutas del carrito
+const cart = new Cart();
+
+app.use(bodyParser.json());
+
+// Agregar producto al carrito
+app.post("/add-to-cart", async (req, res) => {
+    try {
+        const { productId, size, quantity } = req.body;
+
+        const product = await cartManager.getProductById(productId);
+
+        if (!product) {
+            return res.status(404).send("Producto no encontrado.");
+        }
+
+        cart.addProduct(product, quantity);
+
+        res.status(200).json({
+            message: "Producto agregado al carrito.",
+            cart: cart.getItems(),
+            total: cart.getTotal(),
+        });
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+// Checkout del carrito
+app.post("/checkout", async (req, res) => {
+    try {
+        await cartManager.updateProductQuantities(cart.getItems());
+        cart.clear(); // Limpiar el carrito después del checkout
+        res.status(200).json({ message: "Checkout exitoso. Cantidades actualizadas en la hoja." });
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
 
 // Carpeta para guardar imágenes y códigos QR
 const IMAGE_FOLDER = path.join(__dirname, "images");
@@ -43,12 +99,6 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // ID de la hoja de cálculo de Google
 const SPREADSHEET_ID = "1S9F85vLGgpcxcvPVH4nXVM_eB7aYsliBUBUCAwnPOkY";
-
-// Autenticación con Google
-const auth = new google.auth.GoogleAuth({
-    keyFile: "/etc/secrets/nantli-456106-6f611c3d6987.json",
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});
 
 // ========== Agregar producto ==========
 

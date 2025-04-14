@@ -45,6 +45,14 @@
   <!-- Modal de detalles del producto -->
   <div id="modalContainer"></div>
 
+  <!-- Contenedor del carrito -->
+  <div id="cartContainer" class="mt-4">
+    <h4>Carrito de Compras</h4>
+    <div id="cartItems"></div>
+    <p><strong>Total: </strong><span id="cartTotal">$0</span></p>
+    <button class="btn btn-success" id="checkoutButton" onclick="checkout()">Realizar Checkout</button>
+  </div>
+
   <!-- Botón flotante para agregar producto -->
   <button class="floating-btn" onclick="showForm()" title="Agregar nuevo producto">
     <i class="bi bi-plus">+</i>
@@ -55,7 +63,6 @@
     <div class="form-popup">
       <h2>Agregar Nuevo Producto</h2>
       <form id="addProductForm" autocomplete="off">
-        <!-- Aquí va todo el formulario -->
         <div class="form-group">
           <label for="title">Título</label>
           <input type="text" id="title" name="title" class="form-control" placeholder="Ejemplo: Título del producto" required />
