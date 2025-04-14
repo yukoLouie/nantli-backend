@@ -8,9 +8,9 @@ const QRCode = require("qrcode");
 const multer = require("multer");
 const cloudinary = require('cloudinary').v2;
 
-const Cart = require("./cart");
-const CartManager = require("./cartManager");
-const Product = require("./product");
+const Cart = require("./js/cart");
+const CartManager = require("./js/cartManager");
+const Product = require("./js/product");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
