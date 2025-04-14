@@ -45,6 +45,29 @@
   <!-- Modal de detalles del producto -->
   <div id="modalContainer"></div>
 
+  <!-- Botón para ver el carrito -->
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cartModal">Ver Carrito</button>
+
+  <!-- Modal del carrito -->
+  <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cartModalLabel">Carrito de Compras</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h4>Carrito de Compras</h4>
+          <div id="cartItems"></div>
+          <p><strong>Total: </strong><span id="cartTotal">$0</span></p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-success" id="checkoutButton" onclick="checkout()">Realizar Checkout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Contenedor del carrito -->
   <div id="cartContainer" class="mt-4">
     <h4>Carrito de Compras</h4>
@@ -57,6 +80,8 @@
   <button class="floating-btn" onclick="showForm()" title="Agregar nuevo producto">
     <i class="bi bi-plus"></i>
   </button>
+  <div id="cartContainer" class="border p-3 my-3 bg-light"></div>
+  <button class="btn btn-primary" onclick="checkout()">Finalizar compra</button>
 
   <!-- Contenedor del formulario emergente -->
   <div id="formContainer" class="form-overlay hidden">

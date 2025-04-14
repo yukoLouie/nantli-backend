@@ -54,49 +54,107 @@ function sortByTitle(order) {
   renderCards(sorted);
 }
 
-// Función para agregar un producto al carrito
-async function addToCart(productId, size, quantity) {
-  const body = { productId, size, quantity };
+let carrito = [];
+
+// Agrega un producto al carrito
+function addToCart(productId, talla, cantidad = 1) {
+  const existing = carrito.find(item => item.id === productId && item.talla === talla);
+  if (existing) {
+    if (existing.cantidad + cantidad <= existing.disponible) {
+      existing.cantidad += cantidad;
+    } else {
+      alert("No puedes agregar más de la cantidad disponible");
+    }
+  } else {
+    const product = productosOriginales.find(p => p.id === productId && p.talla === talla);
+    if (!product) return alert("Producto no encontrado");
+
+    carrito.push({
+      id: product.id,
+      titulo: product.titulo,
+      talla: product.talla,
+      precio: product.precio,
+      cantidad: cantidad,
+      disponible: product.cantidad,
+    });
+  }
+
+  renderCart();
+}
+
+// Muestra el carrito en un modal o div
+function renderCart() {
+  const container = document.getElementById("cartContainer");
+  container.innerHTML = "";
+
+  if (carrito.length === 0) {
+    container.innerHTML = "<p>Carrito vacío</p>";
+    return;
+  }
+
+  carrito.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.className = "cart-item mb-2";
+
+    div.innerHTML = `
+      <p><strong>${item.titulo}</strong> (Talla: ${item.talla}) - $${item.precio} x 
+      <input type="number" min="1" max="${item.disponible}" value="${item.cantidad}" data-index="${index}" class="cart-qty" style="width: 60px"> 
+      = $${item.precio * item.cantidad}</p>
+      <button class="btn btn-sm btn-danger" onclick="removeFromCart(${index})">Eliminar</button>
+    `;
+
+    container.appendChild(div);
+  });
+
+  // Listeners para cambio de cantidad
+  document.querySelectorAll(".cart-qty").forEach(input => {
+    input.addEventListener("change", (e) => {
+      const i = e.target.dataset.index;
+      const value = parseInt(e.target.value);
+      if (value > 0 && value <= carrito[i].disponible) {
+        carrito[i].cantidad = value;
+        renderCart();
+      } else {
+        e.target.value = carrito[i].cantidad;
+      }
+    });
+  });
+}
+
+// Eliminar producto del carrito
+function removeFromCart(index) {
+  carrito.splice(index, 1);
+  renderCart();
+}
+
+// Checkout
+async function checkout() {
+  if (carrito.length === 0) {
+    return alert("El carrito está vacío");
+  }
 
   try {
-    const response = await fetch('/add-to-cart', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+    // Cambiar la URL de la solicitud a la URL del backend en Render
+    const response = await fetch("https://nantli-backend.onrender.com/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productos: carrito }),
     });
 
-    const data = await response.json();
-    console.log(data); // Aquí puedes manejar la respuesta, como mostrar un mensaje o actualizar el carrito
-  } catch (error) {
-    console.error("Error al agregar al carrito:", error);
-  }
-}
+    if (!response.ok) {
+      throw new Error("Error al procesar el checkout");
+    }
 
-// Función para realizar checkout
-async function checkout() {
-  try {
-    const response = await fetch('/checkout', { method: 'POST' });
     const data = await response.json();
-    console.log(data.message); // Aquí recibes un mensaje de confirmación
-  } catch (error) {
-    console.error("Error al hacer checkout:", error);
-  }
-}
+    alert(data.message || "Checkout exitoso");
 
-// Muestra el modal con los detalles del producto
-function showProductModal(product) {
-  const modal = document.getElementById("productModal");
-  modal.querySelector(".modal-title").textContent = product.titulo;
-  modal.querySelector(".modal-body").innerHTML = `
-    <img src="${product.imagen}" class="img-fluid" alt="${product.titulo}">
-    <p><strong>Descripción:</strong> ${product.descripcion}</p>
-    <p><strong>Precio:</strong> $${product.precio}</p>
-    <p><strong>Categoría:</strong> ${product.categoria}</p>
-    <p><strong>Subcategoría:</strong> ${product.subcategoria}</p>
-    <p><strong>Color:</strong> ${product.color}</p>
-    <p><strong>Talla:</strong> ${product.talla}</p>
-    <p><strong>Cantidad disponible:</strong> ${product.cantidad}</p>
-    <button class="btn btn-primary" onclick="addToCart('${product.id}', '${product.talla}', 1)">Agregar al carrito</button>
-  `;
-  $('#productModal').modal('show');
+    // Limpiar carrito y recargar productos
+    carrito = [];
+    renderCart();
+    fetchProductos(); // <- función que deberías tener para recargar productos desde el backend
+
+  } catch (err) {
+    console.error("Error en el checkout:", err);
+    alert("Error al procesar el checkout");
+  }
 }

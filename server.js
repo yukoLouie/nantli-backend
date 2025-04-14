@@ -219,22 +219,65 @@ app.post("/add-to-cart", async (req, res) => {
 
 // ========== Checkout ==========
 app.post("/checkout", async (req, res) => {
-  try {
-    const items = req.body; // Espera [{ id, size, quantity }, ...]
-    if (!Array.isArray(items)) return res.status(400).send("Formato incorrecto");
-
-    const client = await auth.getClient();
-    const sheets = google.sheets({ version: "v4", auth: client });
-
-    const manager = new CartManager(sheets, SPREADSHEET_ID);
-    await manager.checkout(items);
-
-    res.json({ message: "Checkout realizado y cantidades actualizadas correctamente." });
-  } catch (error) {
-    console.error("Error en checkout:", error);
-    res.status(500).send("Error al procesar el checkout.");
-  }
-});
+    try {
+      const productos = req.body.productos;
+  
+      if (!Array.isArray(productos)) {
+        return res.status(400).json({ message: "Formato de productos incorrecto" });
+      }
+  
+      // Obtener datos actuales de la hoja
+      const { data } = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${SHEET_NAME}!A2:Z`, // Asume que la fila 1 son encabezados
+      });
+  
+      const rows = data.values;
+      const updates = [];
+  
+      productos.forEach(producto => {
+        const { id, talla, cantidad } = producto;
+  
+        // Buscar fila que coincida con ID y talla
+        const rowIndex = rows.findIndex(row => row[0] === id && row[7] === talla); // A=ID (0), H=Talla (7)
+  
+        if (rowIndex === -1) {
+          console.warn(`Producto no encontrado: ${id} talla ${talla}`);
+          return;
+        }
+  
+        const cantidadActual = parseInt(rows[rowIndex][8]); // I=Cantidad (8)
+        const nuevaCantidad = cantidadActual - cantidad;
+  
+        if (nuevaCantidad < 0) {
+          console.warn(`Cantidad insuficiente para ${id} talla ${talla}`);
+          return;
+        }
+  
+        // Registrar update
+        updates.push({
+          range: `${SHEET_NAME}!I${rowIndex + 2}`,
+          values: [[nuevaCantidad]],
+        });
+      });
+  
+      // Aplicar todos los updates con batchUpdate
+      const result = await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId: SPREADSHEET_ID,
+        requestBody: {
+          data: updates,
+          valueInputOption: "RAW",
+        },
+      });
+  
+      res.json({ message: "Checkout realizado exitosamente", updated: updates.length });
+    } catch (error) {
+      console.error("Error en /checkout:", error);
+      res.status(500).json({ message: "Error interno al procesar el checkout" });
+    }
+  });
+  
+  
 
 // ========== Servir HTML por defecto ==========
 app.get("*", (req, res) => {
