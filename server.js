@@ -34,6 +34,9 @@ app.use(cors());
 app.use("/qrcodes", express.static(QR_FOLDER));
 app.use("/images", express.static(IMAGE_FOLDER));
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/js", express.static(path.join(__dirname, "js")));
+app.use("/css", express.static(path.join(__dirname, "css")));
+
 
 const SPREADSHEET_ID = "1S9F85vLGgpcxcvPVH4nXVM_eB7aYsliBUBUCAwnPOkY";
 const auth = new google.auth.GoogleAuth({
