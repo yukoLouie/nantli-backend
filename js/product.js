@@ -15,11 +15,14 @@ function renderCards(productos) {
 <div class="card-body d-flex flex-column justify-content-between">
   <h5 class="card-title text-primary">${product.titulo}</h5>
   <p class="card-text"><strong>Precio:</strong> <span class="text-success">$${product.precio}</span></p>
+  <p class="card-text"><strong>Talla:</strong> ${product.talla}</p>
+  <p class="card-text"><strong>Cantidad:</strong> ${product.cantidad}</p>
   <div class="d-flex justify-content-between mt-3">
     <button class="btn btn-outline-info btn-sm ver-mas-btn">Ver más</button>
     <button class="btn btn-success btn-sm agregar-btn">Agregar</button>
   </div>
 </div>
+
     `;
 
     // Botón "Ver más"
