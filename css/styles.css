@@ -1,79 +1,263 @@
+/* Fuentes elegantes y modernas */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Lora:wght@400;700&display=swap');
+
+/* Estilos generales */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Roboto', sans-serif;
   margin: 0;
   padding: 20px;
-  background-color: #f4f4f4;
-}
-
-.card-container {
+  background-color: #fff; /* Fondo blanco para mayor limpieza */
+  color: #333; /* Texto oscuro para una buena lectura */
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
+  flex-direction: column;
+  min-height: 100vh;
+  background-image: linear-gradient(145deg, #fff, #f4f4f4); /* Fondo sutil con gradiente claro */
+  transition: background-color 0.5s ease;
 }
 
-.card {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  width: 300px;
+/* Títulos */
+h1 {
+  font-family: 'Lora', serif;
+  font-weight: bold;
+  color: #9b59b6; /* Morado suave para un toque elegante */
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  transition: color 0.3s ease;
 }
 
-.card img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
+/* Contenedor de productos (Tarjetas) */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+  justify-items: center;
 }
 
+/* Tarjetas */
+.card {
+  background-color: #f4f4f4; /* Blanco suave para mayor limpieza */
+  border-radius: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Sombra ligera para el contorno */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Efecto hover de tarjeta */
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Imagen de la tarjeta */
+.card-img-top {
+  height: 200px;
+  object-fit: cover;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+  transform: scale(1.1);
+}
+
+/* Cuerpo de la tarjeta */
+.card-body {
+  padding: 1.2rem;
+  background-color: #fff; /* Blanco puro */
+}
+
+.card-title {
+  font-family: 'Lora', serif;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #9b59b6; /* Morado suave para los títulos */
+  letter-spacing: 1px;
+}
+
+.card-text {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.95rem;
+  color: #555; /* Gris oscuro para el texto */
+  text-align: justify;
+  line-height: 1.5;
+}
+
+/* Estilo de los botones flotantes */
 .floating-btn {
   position: fixed;
-  bottom: 20px;
+  bottom: 80px;
   right: 20px;
-  background-color: #0d6efd;
-  color: #fff;
-  border: none;
+  z-index: 1000;
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
+  font-size: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  cursor: pointer;
+  background-color: #9b59b6; /* Morado para el botón flotante */
+  color: white;
+  border: none;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .floating-btn:hover {
-  background-color: #0b5ed7;
+  background-color: #8e44ad;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
+/* Botón de carrito */
+.cart-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #9b59b6; /* Morado suave */
+  color: white;
+  border: none;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cart-btn:hover {
+  background-color: #8e44ad;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Filtros y Barra de búsqueda */
+#searchInput {
+  border-radius: 1rem;
+  padding: 0.8rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 350px;
+  background-color: #f4f4f4; /* Fondo blanco suave para la barra de búsqueda */
+  color: #333; /* Texto oscuro */
+  border: 2px solid #9b59b6; /* Morado para el borde */
+  transition: background-color 0.3s ease, border 0.3s ease;
+}
+
+#searchInput:focus {
+  background-color: #eaeaea;
+  border: 2px solid #8e44ad;
+}
+
+/* Estilo de botones */
+button {
+  border-radius: 0.7rem;
+  padding: 0.8rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+/* Estilos de los botones de filtro */
+button.btn-outline-primary {
+  border-color: #9b59b6; /* Morado suave */
+  color: #9b59b6;
+}
+
+button.btn-outline-primary:hover {
+  background-color: #9b59b6;
+  color: white;
+}
+
+button.btn-outline-danger {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+button.btn-outline-danger:hover {
+  background-color: #e74c3c;
+  color: white;
+}
+
+/* Modal para el formulario emergente */
 .form-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background-color: rgba(33, 37, 41, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 1050;
+  overflow-y: auto;
+  padding: 2rem;
+  backdrop-filter: blur(5px);
 }
 
+/* Popup del formulario */
 .form-popup {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  max-height: 90vh;
-  overflow-y: auto;
-  max-width: 600px;
+  background-color: #f4f4f4; /* Blanco puro */
+  padding: 2rem;
+  border-radius: 1rem;
   width: 100%;
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  max-width: 600px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  animation: pop-up 0.5s ease-in-out;
+}
+
+/* Animación de pop-up */
+@keyframes pop-up {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Adaptación móvil */
+@media (max-width: 768px) {
+  .card-container {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  .floating-btn, .cart-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 26px;
+  }
+
+  #searchInput {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-container {
+    grid-template-columns: 1fr;
+  }
+
+  .floating-btn, .cart-btn {
+    bottom: 15px;
+  }
+
+  .form-popup {
+    width: 90%;
+    padding: 1rem;
+  }
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }

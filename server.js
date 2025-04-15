@@ -276,8 +276,7 @@ app.post("/checkout", async (req, res) => {
           valueInputOption: "RAW",
         },
       });
-  
-      res.json({ message: "Checkout realizado exitosamente", updated: updates.length });
+   
     } catch (error) {
       console.error("Error en /checkout:", error);
       res.status(500).json({ message: "Error interno al procesar el checkout" });
