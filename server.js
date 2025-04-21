@@ -302,14 +302,13 @@ res.status(200).json({ message: "Checkout completado con éxito" });
   
       const fecha = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
       const pedidosSheet = doc.sheetsByTitle['Pedidos'];
-
+  
       await pedidosSheet.addRow({
-  fecha: fecha,
-  cliente: cliente,
-  telefono: telefono,
-  productos: JSON.stringify(productos)
-});
-
+        fecha: fecha,
+        cliente: cliente,
+        telefono: telefono,
+        productos: JSON.stringify(productos)
+      });
   
       res.status(200).json({ message: 'Pedido enviado exitosamente.' });
   
