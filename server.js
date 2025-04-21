@@ -290,46 +290,40 @@ res.status(200).json({ message: "Checkout completado con éxito" });
   
 
 
-  const { google } = require("googleapis");
-const auth = require("./auth"); // Asegúrate de que tienes el archivo de autenticación configurado
-const SPREADSHEET_ID = "TU_SPREADSHEET_ID"; // Sustituye esto por el ID de tu hoja de cálculo
-
-app.post('/enviar-pedido', async (req, res) => {
-  try {
-    const cliente = req.body.cliente || 'Anónimo';
-    const telefono = req.body.telefono || '';
-    const productos = req.body.productos || [];
-
-    if (productos.length === 0) {
-      return res.status(400).json({ message: 'No hay productos en el pedido.' });
+  
+  app.post('/enviar-pedido', async (req, res) => {
+    try {
+      const cliente = req.body.cliente || 'Anónimo';
+      const telefono = req.body.telefono || '';
+      const productos = req.body.productos || [];
+  
+      if (productos.length === 0) {
+        return res.status(400).json({ message: 'No hay productos en el pedido.' });
+      }
+  
+      const fecha = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
+  
+      // Reutiliza el import existente de google y auth
+      const client = await auth.getClient();
+      const sheets = google.sheets({ version: "v4", auth: client });
+  
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: SPREADSHEET_ID,
+        range: "Pedidos!A1",
+        valueInputOption: "RAW",
+        resource: {
+          values: [[fecha, cliente, telefono, JSON.stringify(productos)]],
+        },
+      });
+  
+      res.status(200).json({ message: 'Pedido enviado exitosamente.' });
+  
+    } catch (error) {
+      console.error('Error al enviar pedido:', error);
+      res.status(500).json({ message: 'Error al enviar pedido.' });
     }
-
-    const fecha = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
-
-    // Autenticar el cliente con Google
-    const client = await auth.getClient();
-    const sheets = google.sheets({ version: "v4", auth: client });
-
-    // Añadir el pedido a la hoja "Pedidos"
-    const response = await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID,
-      range: "Pedidos!A1", // Ajusta este rango según la estructura de tu hoja
-      valueInputOption: "RAW", // Usamos RAW para insertar los datos tal cual
-      resource: {
-        values: [
-          [fecha, cliente, telefono, JSON.stringify(productos)] // Los datos que queremos agregar
-        ],
-      },
-    });
-
-    console.log("Pedido enviado:", response.data);
-    res.status(200).json({ message: 'Pedido enviado exitosamente.' });
-
-  } catch (error) {
-    console.error('Error al enviar pedido:', error);
-    res.status(500).json({ message: 'Error al enviar pedido.' });
-  }
-});
+  });
+  
 
   
   
