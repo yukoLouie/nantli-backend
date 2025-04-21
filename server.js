@@ -279,41 +279,45 @@ app.post("/checkout", async (req, res) => {
           valueInputOption: "RAW",
         },
       });
-   
+   // Enviar respuesta exitosa
+res.status(200).json({ message: "Checkout completado con éxito" });
+
     } catch (error) {
       console.error("Error en /checkout:", error);
       res.status(500).json({ message: "Error interno al procesar el checkout" });
     }
   });
   
-  app.post("/enviar-pedido", async (req, res) => {
+
+
+  app.post('/enviar-pedido', async (req, res) => {
     try {
-      const { cliente, telefono, productos } = req.body;
+      const cliente = req.body.cliente || 'Anónimo';
+      const telefono = req.body.telefono || '';
+      const productos = req.body.productos || [];
   
-      if (!cliente || !telefono || !Array.isArray(productos) || productos.length === 0) {
-        return res.status(400).json({ error: "Datos incompletos" });
+      if (productos.length === 0) {
+        return res.status(400).json({ message: 'No hay productos en el pedido.' });
       }
   
-      const timestamp = new Date().toLocaleString("es-MX", { timeZone: "America/Mexico_City" });
-      const productosTexto = productos.join(", "); // "abc123, def456, ghi789"
+      const fecha = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
   
-      const fila = [[timestamp, cliente, telefono, productosTexto]];
+      await pedidosSheet.addRow({
+  fecha: fecha,
+  cliente: cliente,
+  telefono: telefono,
+  productos: JSON.stringify(productos)
+});
+
   
-      await sheets.spreadsheets.values.append({
-        spreadsheetId,
-        range: "Pedidos!A1",
-        valueInputOption: "USER_ENTERED",
-        resource: {
-          values: fila
-        }
-      });
+      res.status(200).json({ message: 'Pedido enviado exitosamente.' });
   
-      res.status(200).json({ message: "Pedido registrado correctamente." });
     } catch (error) {
-      console.error("Error al registrar pedido:", error);
-      res.status(500).json({ error: "Error interno al registrar el pedido." });
+      console.error('Error al enviar pedido:', error);
+      res.status(500).json({ message: 'Error al enviar pedido.' });
     }
   });
+  
   
   
 
