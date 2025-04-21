@@ -20,6 +20,17 @@
 <body>
   <!-- Título de la página -->
   <h1 class="text-center mb-4">Listado de Productos</h1>
+ 
+
+  
+    <!-- Botones de sesión -->
+    <div class="d-flex justify-content-end p-3">
+      <button id="logoutBtn" class="btn btn-danger d-none">Cerrar sesión</button>
+      <button id="loginBtn" class="btn btn-outline-primary ms-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+        Iniciar Sesión
+      </button>
+    </div>
+  
 
   <!-- Contenedor de filtros y ordenamiento -->
   <div class="mb-4" id="filtersContainer">
@@ -105,7 +116,7 @@
 </button>
 
 
-</button>
+ 
   
   <!-- Contenedor del formulario emergente -->
   <div id="formContainer" class="form-overlay hidden">
@@ -171,11 +182,43 @@
       </form>
     </div>
   </div>
+<!-- Modal de Login -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="loginForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="loginModalLabel">Iniciar Sesión</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <input type="email" id="email" class="form-control mb-2" placeholder="Correo electrónico" required>
+          <input type="password" id="password" class="form-control mb-2" placeholder="Contraseña" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div id="checkoutSection" class="mt-4">
+  <h5>Finalizar Pedido</h5>
+  <input type="text" id="nombreCliente" placeholder="Tu nombre" class="form-control mb-2">
+  <input type="tel" id="telefonoCliente" placeholder="Tu teléfono" class="form-control mb-2">
+  <button class="btn btn-primary" onclick="enviarPedidoCliente(
+    document.getElementById('nombreCliente').value,
+    document.getElementById('telefonoCliente').value
+  )">Enviar Pedido</button>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="/js/main.js"></script>
   <script src="/js/filters.js"></script>
   <script src="/js/product.js"></script>
   <script src="/js/form.js"></script>
-  
+  <script type="module" src="/js/login.js"></script>
+ 
+
 </body>
 </html>

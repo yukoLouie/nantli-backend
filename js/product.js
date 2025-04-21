@@ -213,9 +213,14 @@ function removeFromCart(index) {
 }
 
 // Checkout
+// Checkout
 async function checkout() {
   if (carrito.length === 0) {
-    return alert("El carrito está vacío");
+    return Swal.fire({
+      icon: 'info',
+      title: 'Carrito vacío',
+      text: 'Agrega productos antes de hacer checkout.',
+    });
   }
 
   try {
@@ -230,20 +235,79 @@ async function checkout() {
     }
 
     const data = await response.json();
-    alert(data.message || "Checkout exitoso");
 
+    // Vaciar carrito
     carrito = [];
     renderCart();
-    updateCartBadge(); // Actualiza el badge del carrito a cero
+    updateCartBadge();
+
+    // Cerrar modal del carrito
+  // Cerrar modal del carrito
+const cartModal = document.getElementById("cartModal");
+if (cartModal) {
+  let modalInstance = bootstrap.Modal.getInstance(cartModal);
+  if (!modalInstance) {
+    modalInstance = new bootstrap.Modal(cartModal);
+  }
+  modalInstance.hide();
+}
+
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      icon: 'success',
+      title: '¡Pedido enviado!',
+      text: data.message || "Tu pedido se ha procesado exitosamente.",
+      timer: 2500,
+      showConfirmButton: false
+    });
+
   } catch (err) {
     console.error("Error en el checkout:", err);
-    alert("Error al procesar el checkout");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Ocurrió un problema al hacer checkout. Intenta de nuevo.',
+    });
   }
 }
+
+
 
 // Función para abrir el carrito en un modal
 function abrirCarrito() {
   renderCart(); // Asegura que esté actualizado
   const modal = new bootstrap.Modal(document.getElementById("cartModal"));
   modal.show();
+}
+async function enviarPedidoCliente(nombre, telefono) {
+  if (!nombre || !telefono || carrito.length === 0) {
+    alert("Completa tu nombre, teléfono y agrega productos al carrito.");
+    return;
+  }
+
+  const pedido = {
+    cliente: nombre.trim(),
+    telefono: telefono.trim(),
+    productos: carrito.map(item => item.id) // Solo IDs
+  };
+
+  try {
+    const res = await fetch("https://nantli-backend.onrender.com/enviar-pedido", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(pedido)
+    });
+
+    if (res.ok) {
+      alert("✅ Pedido enviado correctamente. ¡Gracias!");
+      carrito = [];
+      renderCarrito(); // Limpia el carrito visualmente
+    } else {
+      alert("❌ Hubo un error al enviar el pedido.");
+    }
+  } catch (err) {
+    console.error("Error al enviar el pedido:", err);
+    alert("❌ Error de conexión al enviar el pedido.");
+  }
 }
