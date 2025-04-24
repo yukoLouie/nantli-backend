@@ -31,3 +31,4 @@ async function loadProducts() {
 document.addEventListener('DOMContentLoaded', function() {
   loadProducts(); // Asegúrate de que se ejecute después de que el DOM esté listo
 });
+

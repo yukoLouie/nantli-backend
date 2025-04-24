@@ -290,11 +290,12 @@ res.status(200).json({ message: "Checkout completado con éxito" });
   
 
 
-  
   app.post('/enviar-pedido', async (req, res) => {
     try {
       const cliente = req.body.cliente || 'Anónimo';
       const telefono = req.body.telefono || '';
+      const mensaje = req.body.mensaje || ''; // Si no hay mensaje, asignar cadena vacía
+      const direccion = req.body.direccion || ''; // Si no hay dirección, asignar cadena vacía
       const productos = req.body.productos || [];
   
       if (productos.length === 0) {
@@ -312,7 +313,7 @@ res.status(200).json({ message: "Checkout completado con éxito" });
         range: "Pedidos!A1",
         valueInputOption: "RAW",
         resource: {
-          values: [[fecha, cliente, telefono, JSON.stringify(productos)]],
+          values: [[fecha, cliente, telefono, mensaje, direccion, JSON.stringify(productos)]],
         },
       });
   
@@ -324,6 +325,49 @@ res.status(200).json({ message: "Checkout completado con éxito" });
     }
   });
   
+  
+  
+// ========== Obtener carrito ==========
+//app.get("/get-cart", async (req, res) => {
+ // try {
+ //   const client = await auth.getClient();
+ //   const sheets = google.sheets({ version: "v4", auth: client });
+//
+  //  const manager = new CartManager(sheets, SPREADSHEET_ID);
+  //  const cartItems = await manager.getCartItems();
+
+ //   res.json(cartItems);
+ // } catch (error) {
+  //  console.error("Error al obtener carrito:", error);
+  //  res.status(500).json({ message: "Error al obtener carrito." });
+ // }
+//});
+
+app.get("/fetch-pedidos", async (req, res) => {
+  try {
+    const client = await auth.getClient();
+    const sheets = google.sheets({ version: "v4", auth: client });
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Pedidos!A1:F", // Asumiendo que los pedidos están en la hoja "Pedidos"
+    });
+
+    const rows = response.data.values || [];
+    const headers = rows[0];
+    const pedidos = rows.slice(1).map(row => {
+      const pedido = {};
+      headers.forEach((header, i) => pedido[header] = row[i] || "");
+      return pedido;
+    });
+
+    res.json(pedidos);
+  } catch (error) {
+    console.error("Error al obtener pedidos:", error.message);
+    res.status(500).send("Error al obtener pedidos.");
+  }
+});
+y
 
   
   
@@ -341,3 +385,5 @@ app.get("*", (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+

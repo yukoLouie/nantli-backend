@@ -1,3 +1,7 @@
+function isUserLoggedIn() {
+  return localStorage.getItem("isLoggedIn") === "true";
+}
+
 
 
 // Renderiza las tarjetas de producto en el contenedor
@@ -213,7 +217,6 @@ function removeFromCart(index) {
 }
 
 // Checkout
-// Checkout
 async function checkout() {
   if (carrito.length === 0) {
     return Swal.fire({
@@ -241,26 +244,36 @@ async function checkout() {
     renderCart();
     updateCartBadge();
 
-    // Cerrar modal del carrito
-  // Cerrar modal del carrito
-const cartModal = document.getElementById("cartModal");
-if (cartModal) {
-  let modalInstance = bootstrap.Modal.getInstance(cartModal);
-  if (!modalInstance) {
-    modalInstance = new bootstrap.Modal(cartModal);
+    const cartModal = document.getElementById("cartModal");
+
+    // 🟡 Si el foco está dentro del modal, muévelo a un lugar seguro antes de cerrar
+    if (cartModal && cartModal.contains(document.activeElement)) {
+      document.activeElement.blur();
+
+      const focoSeguro = document.getElementById("focoSeguro");
+      if (focoSeguro) focoSeguro.focus();
+    }
+
+    // Esperar un pequeño momento para garantizar que el foco se haya movido
+    // Esperar 50ms en lugar de 0 para que el foco realmente cambie antes de ocultar el modal
+setTimeout(() => {
+  if (cartModal) {
+    let modalInstance = bootstrap.Modal.getInstance(cartModal);
+    if (!modalInstance) {
+      modalInstance = new bootstrap.Modal(cartModal);
+    }
+    modalInstance.hide();
   }
-  modalInstance.hide();
-}
 
-
-    // Mostrar mensaje de éxito
-    Swal.fire({
-      icon: 'success',
-      title: '¡Pedido enviado!',
-      text: data.message || "Tu pedido se ha procesado exitosamente.",
-      timer: 2500,
-      showConfirmButton: false
-    });
+  // Mostrar éxito
+  Swal.fire({
+    icon: 'success',
+    title: '¡Pedido enviado!',
+    text: data.message || "Tu pedido se ha procesado exitosamente.",
+    timer: 2500,
+    showConfirmButton: false
+  });
+}, 50); // 🔁 Aumentado de 0 a 50 ms
 
   } catch (err) {
     console.error("Error en el checkout:", err);
@@ -274,21 +287,32 @@ if (cartModal) {
 
 
 
+
+
+
+
 // Función para abrir el carrito en un modal
 function abrirCarrito() {
   renderCart(); // Asegura que esté actualizado
   const modal = new bootstrap.Modal(document.getElementById("cartModal"));
   modal.show();
 }
-async function enviarPedidoCliente(nombre, telefono) {
+
+async function enviarPedidoCliente(nombre, telefono, mensaje, direccion) {
   if (!nombre || !telefono || carrito.length === 0) {
     alert("Completa tu nombre, teléfono y agrega productos al carrito.");
     return;
   }
 
+  // Si no se proporciona un mensaje o dirección, los dejamos como cadenas vacías
+  mensaje = mensaje || '';
+  direccion = direccion || '';
+
   const pedido = {
     cliente: nombre.trim(),
     telefono: telefono.trim(),
+    mensaje: mensaje.trim(),
+    direccion: direccion.trim(),
     productos: carrito.map(item => item.id) // Solo IDs
   };
 
@@ -301,8 +325,7 @@ async function enviarPedidoCliente(nombre, telefono) {
 
     if (res.ok) {
       alert("✅ Pedido enviado correctamente. ¡Gracias!");
-      carrito = [];
-      renderCarrito(); // Limpia el carrito visualmente
+      carrito = []; // Vaciar el carrito
     } else {
       alert("❌ Hubo un error al enviar el pedido.");
     }
@@ -311,3 +334,60 @@ async function enviarPedidoCliente(nombre, telefono) {
     alert("❌ Error de conexión al enviar el pedido.");
   }
 }
+
+// Función para manejar el checkout
+function handleCheckout() {
+  // Verificar si el carrito está vacío
+  if (carrito.length === 0) {
+    return Swal.fire({
+      icon: 'info',
+      title: 'Carrito vacío',
+      text: 'Agrega productos antes de hacer checkout.',
+    });
+  }
+
+  // Cerrar el modal del carrito (esto lo maneja Bootstrap)
+  const cartModalElement = document.getElementById('cartModal');
+  const cartModal = bootstrap.Modal.getInstance(cartModalElement); // Obtener la instancia del modal
+  cartModal.hide(); // Cerrar el modal correctamente
+
+  // Procesar el checkout (logística de la compra)
+  if (isUserLoggedIn()) {
+    checkout();  // Si el usuario está autenticado
+  } else {
+    // Si no está autenticado, pedir nombre y teléfono
+    Swal.fire({
+      title: 'Finalizar Pedido',
+      html: `
+        <input type="text" id="swalNombre" class="swal2-input" placeholder="Tu nombre">
+        <input type="tel" id="swalTelefono" class="swal2-input" placeholder="Tu teléfono">
+        <textarea id="swalMensaje" class="swal2-textarea" placeholder="Tu mensaje (opcional)"></textarea>
+        <input type="text" id="swalDireccion" class="swal2-input" placeholder="Dirección de entrega (opcional)">
+      `,
+      didOpen: () => {
+        document.getElementById('swalNombre').focus();
+      },
+      preConfirm: () => {
+        const nombre = document.getElementById('swalNombre').value.trim();
+        const telefono = document.getElementById('swalTelefono').value.trim();
+        const mensaje = document.getElementById('swalMensaje').value.trim();
+        const direccion = document.getElementById('swalDireccion').value.trim();
+        
+        if (!nombre || !telefono) {
+          Swal.showValidationMessage('Debes completar tu nombre y teléfono.');
+        }
+        
+        return { nombre, telefono, mensaje, direccion };
+      },
+      confirmButtonText: 'Enviar Pedido'
+    }).then(result => {
+      if (result.isConfirmed) {
+        enviarPedidoCliente(result.value.nombre, result.value.telefono, result.value.mensaje, result.value.direccion);
+      }
+    });
+  }
+}
+
+
+
+

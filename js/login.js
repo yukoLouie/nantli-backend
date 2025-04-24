@@ -41,12 +41,11 @@ loginForm?.addEventListener("submit", async (e) => {
     const modalInstance = bootstrap.Modal.getInstance(modalEl);
     modalInstance?.hide();
 
-    // Espera al evento de cierre completo del modal
     modalEl.addEventListener("hidden.bs.modal", () => {
-        document.body.classList.remove("modal-open");
-        document.body.style.overflow = "";
-        document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
-        loginForm.reset();
+      document.body.classList.remove("modal-open");
+      document.body.style.overflow = "";
+      document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+      loginForm.reset();
     }, { once: true });
 
   } catch (error) {
@@ -56,22 +55,45 @@ loginForm?.addEventListener("submit", async (e) => {
 
 // Cerrar sesión
 logoutBtn?.addEventListener("click", () => {
-    signOut(auth).catch(error => {
-      alert("Error al cerrar sesión: " + error.message);
-    });
+  signOut(auth).catch(error => {
+    alert("Error al cerrar sesión: " + error.message);
   });
+});
 
-// Cambios de sesión (muestra u oculta botones)
-onAuthStateChanged(auth, (user) => {
+// Cambios de sesión
+onAuthStateChanged(auth, async (user) => {
+  const adminMenu = document.getElementById("adminMenu");
+
   if (user) {
+    const token = await user.getIdToken();
+
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("authToken", token);
+
     loginBtn?.classList.add("d-none");
     logoutBtn?.classList.remove("d-none");
     floatingBtn?.classList.remove("d-none");
-    // formContainer?.classList.remove("hidden");
+    formContainer?.classList.remove("d-none");
+    if (adminMenu) adminMenu.style.display = "block";
+
+    if (typeof obtenerPedidos === "function") {
+      obtenerPedidos(); // mostrar pedidos al iniciar sesión
+    }
+
   } else {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("authToken");
+
     loginBtn?.classList.remove("d-none");
     logoutBtn?.classList.add("d-none");
     floatingBtn?.classList.add("d-none");
     formContainer?.classList.add("hidden");
+    if (adminMenu) adminMenu.style.display = "none";
   }
 });
+
+// Exportar utilidad
+export function isUserLoggedIn() {
+  const auth = getAuth();
+  return !!auth.currentUser;
+}

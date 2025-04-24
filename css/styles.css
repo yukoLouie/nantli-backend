@@ -271,3 +271,15 @@ button.btn-outline-danger:hover {
 .hidden {
   display: none !important;
 }
+#checkoutSection {
+  display: block !important;
+  opacity: 1 !important; 
+}
+.swal2-container {
+  z-index: 99999 !important;
+}
+/* Estilos para el menú */
+.admin-menu {
+  max-height: 80%;
+  overflow-y: auto;
+}

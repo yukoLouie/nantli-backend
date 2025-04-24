@@ -75,8 +75,8 @@
 </div>
 
   <!-- Modal del carrito -->
- <!-- Modal del carrito -->
- <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true" data-bs-backdrop="false">
+<!-- Modal del carrito -->
+<div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true" data-bs-backdrop="false">
   <div class="modal-dialog modal-lg">
     <div class="modal-content shadow-lg rounded-4 border-0">
       <div class="modal-header bg-dark text-white rounded-top-4">
@@ -93,13 +93,16 @@
       </div>
       <div class="modal-footer bg-white rounded-bottom-4">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Comprando</button>
-        <button class="btn btn-success" id="checkoutButton" onclick="checkout()">
+        <button class="btn btn-success" id="checkoutButton" onclick="handleCheckout()">
           <i class="bi bi-check-circle me-1"></i>Realizar Checkout
         </button>
+        
       </div>
     </div>
   </div>
 </div>
+
+
 
 
 
@@ -202,6 +205,8 @@
     </div>
   </div>
 </div>
+
+<!--checkout non admin-->
 <div id="checkoutSection" class="mt-4">
   <h5>Finalizar Pedido</h5>
   <input type="text" id="nombreCliente" placeholder="Tu nombre" class="form-control mb-2">
@@ -211,11 +216,34 @@
     document.getElementById('telefonoCliente').value
   )">Enviar Pedido</button>
 </div>
+ 
+<!-- Menú desplegable de pedidos (solo visible para administradores) -->
+<div id="adminMenu" class="admin-menu bg-light p-3 shadow" style="display: none; position: fixed; top: 20%; left: 0; width: 250px; z-index: 1000;">
+  <h5>Pedidos Registrados</h5>
+  <ul id="pedidoList" class="list-group">
+    <!-- Los pedidos se cargarán aquí dinámicamente -->
+  </ul>
+</div>
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div id="modalQrContainer" class="text-center mt-3">
+        <img id="qr-preview" src="" alt="QR Code" class="img-fluid" style="max-height: 200px;">
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="/js/main.js"></script>
+  <script  src="/js/main.js"></script>
   <script src="/js/filters.js"></script>
-  <script src="/js/product.js"></script>
+  <script  src="/js/product.js"></script>
   <script src="/js/form.js"></script>
   <script type="module" src="/js/login.js"></script>
  
