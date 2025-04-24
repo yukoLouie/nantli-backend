@@ -367,7 +367,7 @@ app.get("/fetch-pedidos", async (req, res) => {
     res.status(500).send("Error al obtener pedidos.");
   }
 });
-y
+
 
   
   
