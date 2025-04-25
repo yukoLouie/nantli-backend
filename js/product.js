@@ -11,22 +11,32 @@ function renderCards(productos) {
 
   productos.forEach(product => {
     const card = document.createElement("div");
-    card.className = "card m-2 p-2";
+
+    // Verificar si el producto está agotado
+    const isOutOfStock = product.cantidad <= 0;
+
+    // Aplicar clases adicionales para los productos agotados
+    card.className = `card m-2 p-2 ${isOutOfStock ? 'bg-danger text-white' : ''}`;
     card.style.width = "18rem";
 
     card.innerHTML = `
-     <img src="${product.imagen}" class="card-img-top rounded-top product-img" alt="${product.titulo}">
-<div class="card-body d-flex flex-column justify-content-between">
-  <h5 class="card-title text-primary">${product.titulo}</h5>
-  <p class="card-text"><strong>Precio:</strong> <span class="text-success">$${product.precio}</span></p>
-  <p class="card-text"><strong>Talla:</strong> ${product.talla}</p>
-  <p class="card-text"><strong>Cantidad:</strong> ${product.cantidad}</p>
-  <div class="d-flex justify-content-between mt-3">
-    <button class="btn btn-outline-info btn-sm ver-mas-btn">Ver más</button>
-    <button class="btn btn-success btn-sm agregar-btn">Agregar</button>
-  </div>
-</div>
-
+      <img src="${product.imagen}" class="card-img-top rounded-top product-img" alt="${product.titulo}">
+      <div class="card-body d-flex flex-column justify-content-between">
+        <h5 class="card-title ${isOutOfStock ? 'text-white' : 'text-primary'}">${product.titulo}</h5>
+        <p class="card-text"><strong>Precio:</strong> <span class="text-success">$${product.precio}</span></p>
+        <p class="card-text"><strong>Talla:</strong> ${product.talla}</p>
+        <p class="card-text ${isOutOfStock ? 'text-danger fw-bold' : ''}">
+          <strong>${isOutOfStock ? 'Agotado' : 'Cantidad:'}</strong> ${isOutOfStock ? '' : product.cantidad}
+        </p>
+        <div class="d-flex justify-content-between mt-3">
+          <button class="btn btn-outline-info btn-sm ver-mas-btn">Ver más</button>
+          ${
+            isOutOfStock
+              ? '<button class="btn btn-secondary btn-sm" disabled>Agotado</button>'
+              : '<button class="btn btn-success btn-sm agregar-btn">Agregar</button>'
+          }
+        </div>
+      </div>
     `;
 
     // Botón "Ver más"
@@ -35,13 +45,17 @@ function renderCards(productos) {
 
     // Botón "Agregar al carrito"
     const agregarBtn = card.querySelector(".agregar-btn");
-    agregarBtn.addEventListener("click", () => {
-      addToCart(product.id, product.talla, 1);
-    });
+    if (agregarBtn) {
+      agregarBtn.addEventListener("click", () => {
+        addToCart(product.id, product.talla, 1);
+      });
+    }
 
     container.appendChild(card);
   });
 }
+
+
 
 // Muestra más detalles del producto en un modal
 function showProductModal(product) {
@@ -65,9 +79,13 @@ function showProductModal(product) {
     <img src="${product['QR Code URL']}" alt="QR Code" class="img-fluid rounded" style="max-height: 160px;" />
   </div>
   <div class="d-flex justify-content-end gap-2 mt-4">
-    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-    <button class="btn btn-success" onclick="addToCart(${product.id}, '${product.talla}', 1)">Agregar al carrito</button>
-  </div>
+  <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+  ${
+    product.cantidad > 0
+      ? `<button class="btn btn-success" onclick="addToCart(${product.id}, '${product.talla}', 1)">Agregar al carrito</button>`
+      : `<button class="btn btn-secondary" disabled>Agotado</button>`
+  }
+</div>
 `;
 console.log("Producto en modal:", product);
 

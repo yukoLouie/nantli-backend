@@ -4,54 +4,66 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 async function obtenerPedidos() {
   try {
     const token = localStorage.getItem("authToken");
-    const res = await fetch("/fetch-pedidos", {
+    console.log("Token obtenido:", token);
+
+    const res = await fetch("https://nantli-backend.onrender.com/fetch-pedidos", {
       method: "GET",
       headers: {
         "Authorization": "Bearer " + token
       }
     });
 
+    console.log("Respuesta del servidor:", res.status);
+
     if (res.ok) {
       const pedidos = await res.json();
+      console.log("Pedidos recibidos:", pedidos);
       mostrarPedidos(pedidos);
     } else {
-      console.error("No se pudieron obtener los pedidos.");
+      const errorText = await res.text();
+      console.error("Error al obtener los pedidos:", res.status, errorText);
     }
   } catch (error) {
-    console.error("Error al obtener los pedidos:", error);
+    console.error("Excepción al obtener los pedidos:", error);
   }
 }
 
 // Función para mostrar los pedidos en el menú desplegable
 function mostrarPedidos(pedidos) {
-  const pedidoList = document.getElementById("pedidoList");
-  pedidoList.innerHTML = "";
-
-  pedidos.forEach(pedido => {
-    const li = document.createElement("li");
-    li.classList.add("list-group-item");
-    li.textContent = `Pedido #${pedido.ID} - Cliente: ${pedido.Cliente} - Fecha: ${pedido.Fecha}`;
-    pedidoList.appendChild(li);
-  });
+    const pedidoList = document.getElementById("pedidoList");
+    pedidoList.innerHTML = "";
+  
+    pedidos.forEach(pedido => {
+        console.log("Pedido individual:", pedido);
+        // Asignación de valores, con valores predeterminados si no existen
+        const cliente = pedido.cliente || "Sin cliente";
+        const telefono = pedido.telefono || "Sin teléfono";
+        const fecha = pedido.fecha || "Sin fecha";
+  
+        const li = document.createElement("li");
+        li.classList.add("list-group-item");
+        li.textContent = `Cliente: ${cliente} - Teléfono: ${telefono} - Fecha: ${fecha}`;
+        pedidoList.appendChild(li);
+    });
 }
 
-// Esperar que Firebase confirme el usuario y sus claims
-document.addEventListener("DOMContentLoaded", () => {
-  const auth = getAuth();
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      const tokenResult = await user.getIdTokenResult();
-      const isAdmin = tokenResult.claims.admin === true;
+  
 
-      if (isAdmin) {
-        localStorage.setItem("authToken", tokenResult.token); // Usado en fetch
-        document.getElementById("adminMenu").style.display = "block";
-        obtenerPedidos();
-      } else {
-        console.log("Usuario autenticado pero no es administrador.");
-      }
-    } else {
-      console.log("Usuario no autenticado.");
-    }
-  });
+// Definir auth antes de usarlo
+const auth = getAuth();
+
+// Esperar que Firebase confirme el usuario
+onAuthStateChanged(auth, async (user) => {
+  console.log("Cambio de estado de autenticación:", user);
+
+  if (user) {
+    const token = await user.getIdToken();
+    console.log("Usuario autenticado. Token guardado.");
+    localStorage.setItem("authToken", token);
+
+    document.getElementById("adminMenu").style.display = "block";
+    obtenerPedidos();
+  } else {
+    console.log("Usuario no autenticado.");
+  }
 });

@@ -63,6 +63,7 @@ logoutBtn?.addEventListener("click", () => {
 // Cambios de sesión
 onAuthStateChanged(auth, async (user) => {
   const adminMenu = document.getElementById("adminMenu");
+  const pedidosWrapper = document.getElementById("pedidosWrapper");
 
   if (user) {
     const token = await user.getIdToken();
@@ -75,10 +76,7 @@ onAuthStateChanged(auth, async (user) => {
     floatingBtn?.classList.remove("d-none");
     formContainer?.classList.remove("d-none");
     if (adminMenu) adminMenu.style.display = "block";
-
-    if (typeof obtenerPedidos === "function") {
-      obtenerPedidos(); // mostrar pedidos al iniciar sesión
-    }
+    if (pedidosWrapper) pedidosWrapper.style.display = "block";
 
   } else {
     localStorage.removeItem("isLoggedIn");
@@ -89,8 +87,10 @@ onAuthStateChanged(auth, async (user) => {
     floatingBtn?.classList.add("d-none");
     formContainer?.classList.add("hidden");
     if (adminMenu) adminMenu.style.display = "none";
+    if (pedidosWrapper) pedidosWrapper.style.display = "none";
   }
 });
+
 
 // Exportar utilidad
 export function isUserLoggedIn() {
